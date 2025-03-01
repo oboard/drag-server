@@ -13,6 +13,7 @@ export interface BaseNodeProps {
     resizable?: boolean;
     onDragStart?: () => void;
     onDragEnd?: () => void;
+    onSelect?: (nodeId: string, multiSelect: boolean) => void;
     x?: MotionValue<number>;
     y?: MotionValue<number>;
 }
@@ -23,6 +24,7 @@ export function BaseNode({
     resizable = false,
     onDragStart,
     onDragEnd,
+    onSelect,
     x: externalX,
     y: externalY,
     children
@@ -184,7 +186,17 @@ export function BaseNode({
                 });
 
                 dispatch(updateNodePosition({ id: node.id, x: snappedX, y: snappedY }));
-            }}>
+            }}
+            onMouseDown={(e) => {
+                // 如果点击的是调整大小的手柄，不触发选择
+                if ((e.target as HTMLElement).getAttribute('role') === 'button') {
+                    return;
+                }
+                onSelect?.(node.id, e.shiftKey);
+            }}
+            onFocus={() => onSelect?.(node.id, false)}
+            tabIndex={0}
+            >
             <div
                 onPointerDown={startDrag}
                 className="h-10 bg-base-200 flex items-center justify-center">
@@ -192,7 +204,6 @@ export function BaseNode({
             </div>
             <div className="relative w-full h-[calc(100%-2.5rem)]">
                 {children}
-
             </div>
             {resizable && resizeHandles.map(({ direction, className }) => (
                 <div

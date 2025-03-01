@@ -2,8 +2,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from './store';
 import { GridBackground } from './components/GridBackground';
 import { NodeTypeList } from './components/NodeTypeList';
-import { useState, useCallback } from 'react';
-import { addNode, selectNodes, clearSelection } from './store';
+import { useState, useCallback, useEffect } from 'react';
+import { addNode, selectNodes, clearSelection, deleteSelectedNodes } from './store';
 import { v4 as uuidv4 } from 'uuid';
 import { EDITOR_CONFIG } from './config/editor';
 import "./App.css";
@@ -18,6 +18,27 @@ function App() {
   const [selectionStart, setSelectionStart] = useState({ x: 0, y: 0 });
   const [selectionEnd, setSelectionEnd] = useState({ x: 0, y: 0 });
   const dispatch = useDispatch();
+
+  // 处理键盘快捷键
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // 如果正在输入（例如在文本框中），不处理快捷键
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      // Delete 或 Backspace 删除选中的节点
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeIds.length > 0) {
+        e.preventDefault();
+        dispatch(deleteSelectedNodes());
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedNodeIds, dispatch]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();

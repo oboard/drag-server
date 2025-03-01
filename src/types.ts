@@ -1,20 +1,42 @@
-export interface NodeType {
-  id: string;
-  type: string;
-  name: string;
-  icon: string;
-  description: string;
-}
-
-export interface Node {
+// 基础节点信息
+export interface BaseNode {
   id: string;
   type: string;
   name: string;
   position: { x: number; y: number };
-  inputs: { id: string; name: string }[];
-  outputs: { id: string; name: string }[];
+  size?: { width: number; height: number };
 }
 
+// 节点描述信息
+export interface NodeInfo extends BaseNode {
+  icon: string;
+  description: string;
+}
+
+// 节点端口类型
+export interface Port {
+  id: string;
+  name: string;
+}
+
+// 节点大小
+export interface NodeSize {
+  width: number;
+  height: number;
+}
+
+// 节点对象
+export interface NodeObject extends BaseNode {
+  inputs: Port[];
+  outputs: Port[];
+}
+
+// 内容节点
+export interface ContentNode extends NodeObject {
+  content: string;
+}
+
+// 连接
 export interface Connection {
   id: string;
   sourceNodeId: string;

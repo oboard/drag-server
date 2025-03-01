@@ -1,88 +1,75 @@
-import { Node } from "./components/Node";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from './store';
 import { GridBackground } from './components/GridBackground';
+import { NodeTypeList } from './components/NodeTypeList';
 import { useState } from 'react';
+import { addNode } from './store';
+import { v4 as uuidv4 } from 'uuid';
+import { EDITOR_CONFIG } from './config/editor';
 import "./App.css";
+import { NodeFactory } from './components/NodeFactory';
+import { NodeTypes } from './types/index';
 
 function App() {
-  const nodes = useSelector((state: RootState) => state.flow.nodes);
+  const nodes = useSelector((state: RootState) => state.flow.present.nodes);
   const [isDragging, setIsDragging] = useState(false);
+  const dispatch = useDispatch();
 
-  // 可用节点类型列表
-  const nodeTypes = [
-    {
-      id: "input",
-      type: "input",
-      name: "输入节点",
-      icon: "📥",
-      description: "网络数据输入节点"
-    },
-    {
-      id: "filter",
-      type: "filter",
-      name: "过滤节点",
-      icon: "🔍",
-      description: "过滤特定数据包"
-    },
-    {
-      id: "modify",
-      type: "modify",
-      name: "修改节点",
-      icon: "✏️",
-      description: "修改数据包内容"
-    },
-    {
-      id: "output",
-      type: "output",
-      name: "输出节点",
-      icon: "📤",
-      description: "网络数据输出节点"
-    },
-    {
-      id: "logger",
-      type: "logger",
-      name: "日志节点",
-      icon: "📝",
-      description: "记录数据包信息"
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+
+    try {
+      const data = JSON.parse(e.dataTransfer.getData('application/json'));
+
+      // 获取相对于画布的放置位置
+      const canvas = e.currentTarget;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // 对齐到网格
+      const snappedX = Math.round(x / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
+      const snappedY = Math.round(y / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
+
+      // 创建新节点
+      const newNode = {
+        id: uuidv4(),
+        type: data.type,
+        name: data.name,
+        position: { x: snappedX, y: snappedY },
+        inputs: [],
+        outputs: [],
+        size: { width: EDITOR_CONFIG.node.defaultWidth, height: EDITOR_CONFIG.node.defaultHeight }
+      };
+
+      dispatch(addNode(newNode));
+    } catch (error) {
+      console.error('Error dropping node:', error);
     }
-  ] as const;
+  };
 
   return (
     <div className="flex h-screen bg-base-300">
-      {/* 左侧面板 - 节点类型列表 */}
-      <div className="w-64 bg-base-200 p-4 overflow-y-auto border-r border-base-300">
-        <h2 className="text-xl font-bold mb-4">节点列表</h2>
-        <div className="space-y-2">
-          {nodeTypes.map(nodeType => (
-            <div
-              key={nodeType.id}
-              className="card bg-base-100 shadow-md cursor-move select-none"
-            >
-              <div className="card-body p-3">
-                <div className="flex items-center">
-                  <span className="text-2xl mr-2 select-none">{nodeType.icon}</span>
-                  <div>
-                    <h3 className="font-medium select-none">{nodeType.name}</h3>
-                    <p className="text-xs text-base-content/70 select-none">{nodeType.description}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <NodeTypeList />
 
       {/* 右侧画布 */}
       <div
-        className="flex-1 relative overflow-scroll bg-grid-pattern select-none"
+        className="flex-1 relative overflow-scroll bg-grid-pattern select-none editor-container"
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
       >
         <GridBackground visible={isDragging} />
         {nodes.map(node => (
-          <Node
+          <NodeFactory
             key={node.id}
-            node={node}
+            node={node as unknown as NodeTypes}
             selected={false}
+            onSelect={() => { }}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={() => setIsDragging(false)}
           />

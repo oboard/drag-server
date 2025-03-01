@@ -2,7 +2,6 @@ import { motion, useMotionTemplate, useMotionValue, animate } from "framer-motio
 import { Node as NodeType } from "../types";
 import { updateNodePosition } from "../store";
 import { useDispatch } from "react-redux";
-import { useState } from "react";
 
 interface NodeProps {
     node: NodeType;
@@ -21,7 +20,6 @@ export function Node({
     const y = useMotionValue(node.position.y);
     const transform = useMotionTemplate`translate3d(${x}px, ${y}px, 0)`;
     const dispatch = useDispatch();
-    const [isDragging, setIsDragging] = useState(false);
 
     return (
         <motion.div

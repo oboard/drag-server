@@ -9,8 +9,8 @@ export function GridBackground({ visible }: GridBackgroundProps) {
                 }`}
             style={{
                 backgroundImage: `
-                    linear-gradient(to right, rgba(128, 128, 128, 0.1) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(128, 128, 128, 0.1) 1px, transparent 1px)
+                    linear-gradient(to right, rgba(128, 128, 128, 0.2) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(128, 128, 128, 0.2) 1px, transparent 1px)
                 `,
                 backgroundSize: '50px 50px'
             }}

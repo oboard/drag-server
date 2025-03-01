@@ -64,7 +64,7 @@ export function BaseNode({
     const throttledPositionChange = React.useCallback(
         throttle((nodeId: string, x: number, y: number) => {
             onPositionChange?.(nodeId, x, y);
-        }, 32), // 约30fps的更新频率
+        }, 8), // 约120fps的更新频率
         []
     );
 

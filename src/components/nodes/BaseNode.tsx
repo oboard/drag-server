@@ -109,7 +109,9 @@ export function BaseNode({
         nodeHeight.set(newHeight);
         x.set(newX);
         y.set(newY);
-    }, [resizeDirection, nodeWidth, nodeHeight, x, y]);
+        
+        throttledPositionChange(node.id, newX, newY);
+    }, [resizeDirection, nodeWidth, nodeHeight, x, y, node.id, throttledPositionChange]);
 
     const handleResizeEnd = React.useCallback(() => {
         if (!resizeDirection) return;
@@ -135,7 +137,7 @@ export function BaseNode({
             stiffness: 300,
             damping: 30,
             onUpdate: () => {
-                onPositionChange?.(node.id, x.get(), y.get());
+                throttledPositionChange(node.id, x.get(), y.get());
             }
         });
         animate(y, snappedY, {
@@ -143,7 +145,7 @@ export function BaseNode({
             stiffness: 300,
             damping: 30,
             onUpdate: () => {
-                onPositionChange?.(node.id, x.get(), y.get());
+                throttledPositionChange(node.id, x.get(), y.get());
             }
         });
 
@@ -160,7 +162,7 @@ export function BaseNode({
         }));
 
         setResizeDirection(null);
-    }, [resizeDirection, node.id, dispatch, nodeWidth, nodeHeight, x, y, onPositionChange]);
+    }, [resizeDirection, node.id, dispatch, nodeWidth, nodeHeight, x, y, throttledPositionChange]);
 
     React.useEffect(() => {
         if (resizeDirection) {

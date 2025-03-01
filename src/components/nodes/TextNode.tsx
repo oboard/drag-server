@@ -9,49 +9,32 @@ interface TextNodeProps extends Omit<BaseNodeProps, 'node'> {
     onConnectionEnd?: (targetNodeId: string, targetInputId: string) => void;
 }
 
-export function TextNodeComponent(props: TextNodeProps) {
+export function TextNodeComponent({ node, onConnectionStart, ...props }: TextNodeProps) {
     const dispatch = useDispatch();
 
-    const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        dispatch(updateNodeContent({
-            id: props.node.id,
-            content: e.target.value
-        }));
-    };
-
     const handleConnectionStart = (e: React.PointerEvent<HTMLButtonElement>) => {
-        console.log('TextNode - handleConnectionStart');
         const rect = e.currentTarget.getBoundingClientRect();
         const canvas = document.querySelector('.editor-background')?.parentElement;
-        if (!canvas) {
-            console.error('TextNode - Canvas not found');
-            return;
-        }
+        if (!canvas) return;
 
-        const canvasRect = canvas.getBoundingClientRect();
-        const scrollLeft = canvas.scrollLeft;
-        const scrollTop = canvas.scrollTop;
-
+        const { left, top } = canvas.getBoundingClientRect();
         const startPos = {
-            x: rect.left + rect.width / 2 - canvasRect.left + scrollLeft,
-            y: rect.top + rect.height / 2 - canvasRect.top + scrollTop
+            x: rect.left + rect.width / 2 - left + canvas.scrollLeft,
+            y: rect.top + rect.height / 2 - top + canvas.scrollTop
         };
-        console.log('TextNode - Connection start position:', startPos);
 
-        props.onConnectionStart?.(props.node.id, 'output', startPos);
+        onConnectionStart?.(node.id, 'output', startPos);
     };
 
     return (
-        <BaseNode {...props}>
+        <BaseNode node={node} {...props}>
             <div className="flex flex-col gap-2 p-2">
-                {/* output area */}
                 <div className='flex items-center gap-2 justify-end translate-x-[16px]'>
                     <span>Value</span>
-
                     <button
                         type='button'
                         className='bg-primary rounded-full w-4 h-4 hover:bg-primary/80 transition-colors'
-                        onPointerUp={handleConnectionStart}
+                        onPointerDown={handleConnectionStart}
                         aria-label="Connect output"
                         data-port="output"
                     />
@@ -59,9 +42,12 @@ export function TextNodeComponent(props: TextNodeProps) {
             </div>
             <textarea
                 className="w-full h-[calc(100%-4rem)] resize-none border-none focus:outline-none bg-transparent p-2"
-                value={props.node.content}
-                onChange={handleContentChange}
+                value={node.content}
+                onChange={e => dispatch(updateNodeContent({
+                    id: node.id,
+                    content: e.target.value
+                }))}
             />
         </BaseNode>
     );
-} 
+}

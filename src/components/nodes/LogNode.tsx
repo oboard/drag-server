@@ -8,11 +8,7 @@ interface LogNodeProps extends Omit<BaseNodeProps, 'node' | 'resizable'> {
 }
 
 export function LogNodeComponent(props: LogNodeProps) {
-    const handleConnectionEnd = (e: React.PointerEvent<HTMLButtonElement>) => {
-        console.log('LogNode - handleConnectionEnd', {
-            nodeId: props.node.id,
-            inputId: 'input'
-        });
+    const handleConnectionEnd = (_e: React.PointerEvent<HTMLButtonElement>) => {
         props.onConnectionEnd?.(props.node.id, 'input');
     };
 

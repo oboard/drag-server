@@ -27,7 +27,7 @@ export function TextNodeComponent({ node, onConnectionStart, ...props }: TextNod
     };
 
     return (
-        <BaseNode node={node} {...props}>
+        <BaseNode resizable={true} node={node} {...props}>
             <div className="flex flex-col gap-2 p-2">
                 <div className='flex items-center gap-2 justify-end translate-x-[16px]'>
                     <span>Value</span>
@@ -40,14 +40,16 @@ export function TextNodeComponent({ node, onConnectionStart, ...props }: TextNod
                     />
                 </div>
             </div>
-            <textarea
-                className="w-full h-[calc(100%-4rem)] resize-none border-none focus:outline-none bg-transparent p-2"
-                value={node.content}
-                onChange={e => dispatch(updateNodeContent({
-                    id: node.id,
-                    content: e.target.value
-                }))}
-            />
+            <div className='w-full h-full p-2'>
+                <textarea
+                    className="w-full h-full resize-none border-none focus:outline-none bg-base-200 rounded-lg p-2"
+                    value={node.content}
+                    onChange={e => dispatch(updateNodeContent({
+                        id: node.id,
+                        content: e.target.value
+                    }))}
+                />
+            </div>
         </BaseNode>
     );
 }

@@ -12,7 +12,7 @@ export function ConnectionLine({ connection, isPreview, previewStart, previewEnd
         console.log('ConnectionLine - Drawing preview', { previewStart, previewEnd });
         // 绘制预览连线
         const dx = previewEnd.x - previewStart.x;
-        const dy = previewEnd.y - previewStart.y;
+        // const dy = previewEnd.y - previewStart.y;
         const midX = previewStart.x + dx * 0.5;
 
         // 使用三次贝塞尔曲线创建平滑的连线

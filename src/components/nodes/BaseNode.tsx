@@ -257,7 +257,7 @@ export function BaseNode({
             {resizable && resizeHandles.map(({ direction, className }) => (
                 <div
                     key={direction}
-                    className={`absolute bg-transparent hover:bg-base-300 z-10 ${className}`}
+                    className={`absolute bg-transparent hover:bg-primary/20 rounded-full z-10 ${className}`}
                     onPointerDown={(e) => {
                         e.stopPropagation();
                         setResizeDirection(direction);

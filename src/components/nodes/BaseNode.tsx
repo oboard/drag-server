@@ -34,7 +34,7 @@ export interface BaseNodeProps {
     onDragStart?: () => void;
     onDragEnd?: () => void;
     onSelect?: (nodeId: string, multiSelect: boolean) => void;
-    onPositionChange?: (nodeId: string, x: number, y: number) => void;
+    onPositionChange?: (nodeId: string) => void;
     x?: MotionValue<number>;
     y?: MotionValue<number>;
 }
@@ -62,8 +62,8 @@ export function BaseNode({
 
     // 使用 useCallback 和 throttle 来优化位置更新
     const throttledPositionChange = React.useCallback(
-        throttle((nodeId: string, x: number, y: number) => {
-            onPositionChange?.(nodeId, x, y);
+        throttle((nodeId: string) => {
+            onPositionChange?.(nodeId);
         }, 8), // 约120fps的更新频率
         []
     );
@@ -109,8 +109,8 @@ export function BaseNode({
         nodeHeight.set(newHeight);
         x.set(newX);
         y.set(newY);
-        
-        throttledPositionChange(node.id, newX, newY);
+
+        throttledPositionChange(node.id);
     }, [resizeDirection, nodeWidth, nodeHeight, x, y, node.id, throttledPositionChange]);
 
     const handleResizeEnd = React.useCallback(() => {
@@ -137,7 +137,7 @@ export function BaseNode({
             stiffness: 300,
             damping: 30,
             onUpdate: () => {
-                throttledPositionChange(node.id, x.get(), y.get());
+                throttledPositionChange(node.id);
             }
         });
         animate(y, snappedY, {
@@ -145,7 +145,7 @@ export function BaseNode({
             stiffness: 300,
             damping: 30,
             onUpdate: () => {
-                throttledPositionChange(node.id, x.get(), y.get());
+                throttledPositionChange(node.id);
             }
         });
 
@@ -209,7 +209,7 @@ export function BaseNode({
             }}
             onDragStart={onDragStart}
             onDrag={() => {
-                throttledPositionChange(node.id, x.get(), y.get());
+                throttledPositionChange(node.id);
             }}
             onDragEnd={() => {
                 onDragEnd?.();
@@ -222,7 +222,7 @@ export function BaseNode({
                     stiffness: 300,
                     damping: 30,
                     onUpdate: () => {
-                        throttledPositionChange(node.id, x.get(), y.get());
+                        throttledPositionChange(node.id);
                     }
                 });
                 animate(y, snappedY, {
@@ -230,7 +230,7 @@ export function BaseNode({
                     stiffness: 300,
                     damping: 30,
                     onUpdate: () => {
-                        throttledPositionChange(node.id, x.get(), y.get());
+                        throttledPositionChange(node.id);
                     }
                 });
 
@@ -254,25 +254,27 @@ export function BaseNode({
             <div className="relative flex flex-col w-full h-[calc(100%-2.5rem)]">
                 {children}
             </div>
-            {resizable && resizeHandles.map(({ direction, className }) => (
-                <div
-                    key={direction}
-                    className={`absolute bg-transparent hover:bg-primary/20 rounded-full z-10 ${className}`}
-                    onPointerDown={(e) => {
-                        e.stopPropagation();
-                        setResizeDirection(direction);
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
+            <div className="absolute inset-0 pointer-events-none">
+                {resizable && resizeHandles.map(({ direction, className }) => (
+                    <div
+                        key={direction}
+                        className={`absolute bg-transparent hover:bg-primary/20 rounded-full pointer-events-auto ${className}`}
+                        onPointerDown={(e) => {
+                            e.stopPropagation();
                             setResizeDirection(direction);
-                        }
-                    }}
-                    aria-label={`Resize ${direction}`}
-                />
-            ))}
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                setResizeDirection(direction);
+                            }
+                        }}
+                        aria-label={`Resize ${direction}`}
+                    />
+                ))}
+            </div>
         </motion.div>
     );
 } 

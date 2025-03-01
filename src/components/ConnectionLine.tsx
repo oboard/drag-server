@@ -26,6 +26,7 @@ export function ConnectionLine({ connection, isPreview, previewStart, previewEnd
                 className="absolute inset-0 pointer-events-none"
                 role="presentation"
                 aria-hidden="true"
+                aria-label="Preview Connection Line"
                 width="100%"
                 height="100%"
             >

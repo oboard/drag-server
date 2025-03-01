@@ -1,15 +1,17 @@
 import { useSelector, useDispatch } from 'react-redux';
+import { store } from './store';
 import { RootState } from './store';
 import { GridBackground } from './components/GridBackground';
 import { NodeTypeList } from './components/NodeTypeList';
 import { useState, useCallback, useEffect } from 'react';
-import { addNode, selectNodes, clearSelection, deleteSelectedNodes, addConnection, updateConnection } from './store';
+import { addNode, selectNodes, clearSelection, deleteSelectedNodes, addConnection, updateConnection, deleteConnection } from './store';
 import { v4 as uuidv4 } from 'uuid';
 import { EDITOR_CONFIG } from './config/editor';
 import "./App.css";
 import { NodeFactory } from './components/NodeFactory';
-import { NodeTypes } from './types/index';
+import type { NodeTypes } from './types/index';
 import { ConnectionLine } from './components/ConnectionLine';
+import type { Connection } from './types';
 
 interface DraggingConnection {
   sourceNodeId: string;
@@ -95,7 +97,7 @@ function App() {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left + canvas.scrollLeft;
       const y = e.clientY - rect.top + canvas.scrollTop;
-      
+
       setIsSelecting(true);
       setSelectionStart({ x, y });
       setSelectionEnd({ x, y });
@@ -110,7 +112,7 @@ function App() {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left + canvas.scrollLeft;
     const y = e.clientY - rect.top + canvas.scrollTop;
-    
+
     setSelectionEnd({ x, y });
 
     // 计算选择框的边界
@@ -143,36 +145,60 @@ function App() {
 
   const handleConnectionStart = useCallback((nodeId: string, outputId: string, startPos: { x: number; y: number }) => {
     console.log('App - handleConnectionStart', { nodeId, outputId, startPos });
-    const canvas = document.querySelector('.editor-background')?.parentElement;
-    if (!canvas) {
-      console.error('App - Canvas not found');
-      return;
+
+    // 检查是否是从输入端口开始拖动
+    if (outputId === 'input') {
+      // 查找连接到这个输入端口的现有连接
+      const existingConnection = connections.find(conn =>
+        conn.targetNodeId === nodeId && conn.targetInputId === 'input'
+      );
+
+      if (existingConnection) {
+        // 如果找到现有连接，删除它并开始新的连接
+        dispatch(deleteConnection(existingConnection.id));
+
+        // 获取原始输出端口的位置
+        const sourceButton = document.querySelector(`[data-node-id="${existingConnection.sourceNodeId}"] [data-port="output"]`);
+        if (!sourceButton) return;
+
+        const canvas = document.querySelector('.editor-background')?.parentElement;
+        if (!canvas) return;
+
+        const canvasRect = canvas.getBoundingClientRect();
+        const sourceRect = sourceButton.getBoundingClientRect();
+        const scrollLeft = canvas.scrollLeft;
+        const scrollTop = canvas.scrollTop;
+
+        const realStartPos = {
+          x: sourceRect.left + sourceRect.width / 2 - canvasRect.left + scrollLeft,
+          y: sourceRect.top + sourceRect.height / 2 - canvasRect.top + scrollTop
+        };
+
+        // 从原始的输出端口开始新的连接
+        setDraggingConnection({
+          sourceNodeId: existingConnection.sourceNodeId,
+          sourceOutputId: existingConnection.sourceOutputId,
+          startPos: realStartPos,
+          currentPos: {
+            x: startPos.x,
+            y: startPos.y
+          }
+        });
+        return;
+      }
     }
-    
-    const scrollLeft = canvas.scrollLeft;
-    const scrollTop = canvas.scrollTop;
-    
-    // 获取源节点的位置
-    const sourceNode = nodes.find(node => node.id === nodeId);
-    if (!sourceNode) {
-      console.error('App - Source node not found:', nodeId);
-      return;
-    }
-    
+
+    // 正常的新连接逻辑
     setDraggingConnection({
       sourceNodeId: nodeId,
       sourceOutputId: outputId,
-      startPos: {
-        x: startPos.x,
-        y: startPos.y
-      },
+      startPos,
       currentPos: {
         x: startPos.x,
         y: startPos.y
       }
     });
-    console.log('App - Dragging connection set');
-  }, [nodes]);
+  }, [connections, dispatch]);
 
   const handleConnectionMove = useCallback((e: React.MouseEvent) => {
     if (!draggingConnection) return;
@@ -198,7 +224,7 @@ function App() {
       targetInputId,
       draggingConnection
     });
-    
+
     if (!draggingConnection) {
       console.log('App - No dragging connection to end');
       return;
@@ -211,9 +237,19 @@ function App() {
       return;
     }
 
+    // 检查目标输入端口是否已经有连接
+    const existingConnection = connections.find(conn =>
+      conn.targetNodeId === targetNodeId && conn.targetInputId === targetInputId
+    );
+
+    // 如果存在连接，先删除它
+    if (existingConnection) {
+      dispatch(deleteConnection(existingConnection.id));
+    }
+
     // 创建连接路径
     const dx = draggingConnection.currentPos.x - draggingConnection.startPos.x;
-    const dy = draggingConnection.currentPos.y - draggingConnection.startPos.y;
+    // const dy = draggingConnection.currentPos.y - draggingConnection.startPos.y;
     const midX = draggingConnection.startPos.x + dx * 0.5;
     const path = `M ${draggingConnection.startPos.x} ${draggingConnection.startPos.y} 
                  C ${midX} ${draggingConnection.startPos.y},
@@ -231,7 +267,7 @@ function App() {
     console.log('App - Connection added');
 
     setDraggingConnection(null);
-  }, [draggingConnection, dispatch]);
+  }, [draggingConnection, dispatch, connections]);
 
   // 添加一个新的处理函数来处理画布上的指针事件
   const handleCanvasPointerUp = useCallback((e: React.PointerEvent) => {
@@ -241,28 +277,31 @@ function App() {
     }
   }, [draggingConnection]);
 
-  const handleNodePositionChange = useCallback((nodeId: string, x: number, y: number) => {
+  const handleNodePositionChange = useCallback((nodeId: string) => {
+    // 直接从 store 获取最新的 connections
+    const currentConnections = store.getState().flow.present.connections;
+
     // 更新与该节点相关的所有连接
-    connections.forEach(connection => {
+    currentConnections.forEach(connection => {
       if (connection.sourceNodeId === nodeId || connection.targetNodeId === nodeId) {
         // 找到源节点和目标节点
         const sourceNode = nodes.find(node => node.id === connection.sourceNodeId);
         const targetNode = nodes.find(node => node.id === connection.targetNodeId);
-        
+
         if (!sourceNode || !targetNode) return;
 
         // 计算连接点的位置
         const sourceButton = document.querySelector(`[data-node-id="${connection.sourceNodeId}"] [data-port="output"]`);
         const targetButton = document.querySelector(`[data-node-id="${connection.targetNodeId}"] [data-port="input"]`);
-        
+
         if (!sourceButton || !targetButton) return;
 
         const sourceRect = sourceButton.getBoundingClientRect();
         const targetRect = targetButton.getBoundingClientRect();
         const canvas = document.querySelector('.editor-background')?.parentElement;
-        
+
         if (!canvas) return;
-        
+
         const canvasRect = canvas.getBoundingClientRect();
         const scrollLeft = canvas.scrollLeft;
         const scrollTop = canvas.scrollTop;
@@ -272,11 +311,11 @@ function App() {
         const startY = sourceRect.top + sourceRect.height / 2 - canvasRect.top + scrollTop;
         const endX = targetRect.left + targetRect.width / 2 - canvasRect.left + scrollLeft;
         const endY = targetRect.top + targetRect.height / 2 - canvasRect.top + scrollTop;
-        
+
         const dx = endX - startX;
         const dy = endY - startY;
         const midX = startX + dx * 0.5;
-        
+
         const path = `M ${startX} ${startY} 
                      C ${midX} ${startY},
                        ${midX} ${endY},
@@ -289,7 +328,7 @@ function App() {
         }));
       }
     });
-  }, [connections, nodes, dispatch]);
+  }, [nodes, dispatch]);
 
   return (
     <div className="flex h-screen bg-base-300">
@@ -311,7 +350,7 @@ function App() {
       >
         <div className="editor-background absolute inset-0" />
         <GridBackground visible={isDragging} />
-        
+
         {/* 连线 */}
         {connections.map(connection => (
           <ConnectionLine key={connection.id} connection={connection} />
@@ -369,5 +408,6 @@ function App() {
     </div>
   );
 }
-
 export default App;
+
+

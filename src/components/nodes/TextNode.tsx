@@ -28,12 +28,12 @@ export function TextNodeComponent({ node, onConnectionStart, ...props }: TextNod
 
     return (
         <BaseNode resizable={true} node={node} {...props}>
-            <div className="flex flex-col gap-2 p-2">
+            <div className="flex flex-col gap-2 p-2 relative z-10">
                 <div className='flex items-center gap-2 justify-end translate-x-[16px]'>
                     <span>Value</span>
                     <button
                         type='button'
-                        className='bg-primary rounded-full w-4 h-4 hover:bg-primary/80 transition-colors'
+                        className='bg-primary rounded-full w-4 h-4 hover:bg-secondary transition-colors'
                         onPointerDown={handleConnectionStart}
                         aria-label="Connect output"
                         data-port="output"

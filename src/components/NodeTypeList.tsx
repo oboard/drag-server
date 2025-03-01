@@ -4,14 +4,14 @@ const nodeTypes = [
     {
         id: "text",
         type: "text",
-        name: "文本节点",
+        name: "文本",
         icon: "📝",
         description: "文本输入节点"
     },
     {
         id: "logger",
         type: "log",
-        name: "日志节点",
+        name: "日志",
         icon: "📝",
         description: "日志输出节点"
     }

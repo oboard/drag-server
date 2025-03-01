@@ -10,7 +10,7 @@ export interface NodeFactoryProps {
     onDragEnd?: () => void;
     onConnectionStart?: (nodeId: string, outputId: string, startPos: { x: number; y: number }) => void;
     onConnectionEnd?: (targetNodeId: string, targetInputId: string) => void;
-    onPositionChange?: (nodeId: string, x: number, y: number) => void;
+    onPositionChange?: (nodeId: string) => void;
 }
 
 export function NodeFactory(props: NodeFactoryProps) {

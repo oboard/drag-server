@@ -24,7 +24,6 @@ export function ConnectionLine({ connection, isPreview, previewStart, previewEnd
         return (
             <svg
                 className="absolute inset-0 pointer-events-none"
-                style={{ zIndex: 1000 }}
                 role="presentation"
                 aria-hidden="true"
                 width="100%"
@@ -45,7 +44,6 @@ export function ConnectionLine({ connection, isPreview, previewStart, previewEnd
     return (
         <svg
             className="absolute inset-0 pointer-events-none"
-            style={{ zIndex: 1 }}
             role="presentation"
             aria-hidden="true"
             width="100%"

@@ -8,6 +8,9 @@ export interface NodeFactoryProps {
     onSelect: (nodeId: string, multiSelect: boolean) => void;
     onDragStart?: () => void;
     onDragEnd?: () => void;
+    onConnectionStart?: (nodeId: string, outputId: string, startPos: { x: number; y: number }) => void;
+    onConnectionEnd?: (targetNodeId: string, targetInputId: string) => void;
+    onPositionChange?: (nodeId: string, x: number, y: number) => void;
 }
 
 export function NodeFactory(props: NodeFactoryProps) {

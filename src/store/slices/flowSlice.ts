@@ -57,6 +57,18 @@ export const flowSlice = createSlice({
         conn => !state.selectedNodeIds.includes(conn.sourceNodeId) && !state.selectedNodeIds.includes(conn.targetNodeId)
       );
       state.selectedNodeIds = [];
+    },
+    addConnection: (state, action: PayloadAction<Connection>) => {
+      state.connections.push(action.payload);
+    },
+    deleteConnection: (state, action: PayloadAction<string>) => {
+      state.connections = state.connections.filter(conn => conn.id !== action.payload);
+    },
+    updateConnection: (state, action: PayloadAction<{ id: string; path: string }>) => {
+      const connection = state.connections.find(conn => conn.id === action.payload.id);
+      if (connection) {
+        connection.path = action.payload.path;
+      }
     }
   }
 });
@@ -70,6 +82,9 @@ export const {
   selectNodes,
   clearSelection,
   deleteSelectedNodes,
+  addConnection,
+  deleteConnection,
+  updateConnection,
 } = flowSlice.actions;
 
 export default flowSlice.reducer; 

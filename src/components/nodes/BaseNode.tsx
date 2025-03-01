@@ -39,6 +39,17 @@ export interface BaseNodeProps {
     y?: MotionValue<number>;
 }
 
+const resizeHandles: { direction: ResizeDirection; className: string }[] = [
+    { direction: 'n', className: 'top-0 left-1/2 -translate-x-1/2 h-2 w-full cursor-n-resize' },
+    { direction: 's', className: 'bottom-0 left-1/2 -translate-x-1/2 h-2 w-full cursor-s-resize' },
+    { direction: 'e', className: 'right-0 top-1/2 -translate-y-1/2 w-2 h-full cursor-e-resize' },
+    { direction: 'w', className: 'left-0 top-1/2 -translate-y-1/2 w-2 h-full cursor-w-resize' },
+    { direction: 'ne', className: 'top-0 right-0 h-2 w-2 cursor-ne-resize' },
+    { direction: 'nw', className: 'top-0 left-0 h-2 w-2 cursor-nw-resize' },
+    { direction: 'se', className: 'bottom-0 right-0 h-2 w-2 cursor-se-resize' },
+    { direction: 'sw', className: 'bottom-0 left-0 h-2 w-2 cursor-sw-resize' }
+];
+
 export function BaseNode({
     node,
     selected,
@@ -64,13 +75,9 @@ export function BaseNode({
     const throttledPositionChange = React.useCallback(
         throttle((nodeId: string) => {
             onPositionChange?.(nodeId);
-        }, 8), // 约120fps的更新频率
+        }, 8),
         []
     );
-
-    const startDrag = (e: React.PointerEvent) => {
-        dragControls.start(e);
-    }
 
     const handleResize = React.useCallback((e: PointerEvent) => {
         if (!resizeDirection) return;
@@ -113,56 +120,44 @@ export function BaseNode({
         throttledPositionChange(node.id);
     }, [resizeDirection, nodeWidth, nodeHeight, x, y, node.id, throttledPositionChange]);
 
+    const snapToGrid = React.useCallback((value: number) => {
+        return Math.round(value / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
+    }, []);
+
+    const animateToPosition = React.useCallback((targetX: number, targetY: number) => {
+        animate(x, targetX, {
+            type: "spring",
+            stiffness: 300,
+            damping: 30,
+            onUpdate: () => throttledPositionChange(node.id)
+        });
+        animate(y, targetY, {
+            type: "spring",
+            stiffness: 300,
+            damping: 30,
+            onUpdate: () => throttledPositionChange(node.id)
+        });
+    }, [x, y, node.id, throttledPositionChange]);
+
     const handleResizeEnd = React.useCallback(() => {
         if (!resizeDirection) return;
 
-        const snappedWidth = Math.round(nodeWidth.get() / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
-        const snappedHeight = Math.round(nodeHeight.get() / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
-        const snappedX = Math.round(x.get() / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
-        const snappedY = Math.round(y.get() / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
+        const snappedWidth = snapToGrid(nodeWidth.get());
+        const snappedHeight = snapToGrid(nodeHeight.get());
+        const snappedX = snapToGrid(x.get());
+        const snappedY = snapToGrid(y.get());
 
         // 动画过渡到对齐位置
-        animate(nodeWidth, snappedWidth, {
-            type: "spring",
-            stiffness: 300,
-            damping: 30
-        });
-        animate(nodeHeight, snappedHeight, {
-            type: "spring",
-            stiffness: 300,
-            damping: 30
-        });
-        animate(x, snappedX, {
-            type: "spring",
-            stiffness: 300,
-            damping: 30,
-            onUpdate: () => {
-                throttledPositionChange(node.id);
-            }
-        });
-        animate(y, snappedY, {
-            type: "spring",
-            stiffness: 300,
-            damping: 30,
-            onUpdate: () => {
-                throttledPositionChange(node.id);
-            }
-        });
+        animate(nodeWidth, snappedWidth, { type: "spring", stiffness: 300, damping: 30 });
+        animate(nodeHeight, snappedHeight, { type: "spring", stiffness: 300, damping: 30 });
+        animateToPosition(snappedX, snappedY);
 
         // 更新 store
-        dispatch(updateNodeSize({
-            id: node.id,
-            width: snappedWidth,
-            height: snappedHeight
-        }));
-        dispatch(updateNodePosition({
-            id: node.id,
-            x: snappedX,
-            y: snappedY
-        }));
+        dispatch(updateNodeSize({ id: node.id, width: snappedWidth, height: snappedHeight }));
+        dispatch(updateNodePosition({ id: node.id, x: snappedX, y: snappedY }));
 
         setResizeDirection(null);
-    }, [resizeDirection, node.id, dispatch, nodeWidth, nodeHeight, x, y, throttledPositionChange]);
+    }, [resizeDirection, node.id, dispatch, nodeWidth, nodeHeight, x, y, snapToGrid, animateToPosition]);
 
     React.useEffect(() => {
         if (resizeDirection) {
@@ -175,17 +170,6 @@ export function BaseNode({
         };
     }, [resizeDirection, handleResize, handleResizeEnd]);
 
-    const resizeHandles: { direction: ResizeDirection; className: string }[] = [
-        { direction: 'n', className: 'top-0 left-1/2 -translate-x-1/2 h-2 w-full cursor-n-resize' },
-        { direction: 's', className: 'bottom-0 left-1/2 -translate-x-1/2 h-2 w-full cursor-s-resize' },
-        { direction: 'e', className: 'right-0 top-1/2 -translate-y-1/2 w-2 h-full cursor-e-resize' },
-        { direction: 'w', className: 'left-0 top-1/2 -translate-y-1/2 w-2 h-full cursor-w-resize' },
-        { direction: 'ne', className: 'top-0 right-0 h-2 w-2 cursor-ne-resize' },
-        { direction: 'nw', className: 'top-0 left-0 h-2 w-2 cursor-nw-resize' },
-        { direction: 'se', className: 'bottom-0 right-0 h-2 w-2 cursor-se-resize' },
-        { direction: 'sw', className: 'bottom-0 left-0 h-2 w-2 cursor-sw-resize' }
-    ];
-
     return (
         <motion.div
             data-node
@@ -194,61 +178,32 @@ export function BaseNode({
             drag
             _dragX={x}
             _dragY={y}
-            dragConstraints={{
-                top: 0,
-                left: 0
-            }}
+            dragConstraints={{ top: 0, left: 0 }}
             dragListener={false}
             dragControls={dragControls}
             dragElastic={0.1}
             dragMomentum={false}
-            style={{
-                transform,
-                width: nodeWidth,
-                height: nodeHeight
-            }}
+            style={{ transform, width: nodeWidth, height: nodeHeight }}
             onDragStart={onDragStart}
-            onDrag={() => {
-                throttledPositionChange(node.id);
-            }}
+            onDrag={() => throttledPositionChange(node.id)}
             onDragEnd={() => {
                 onDragEnd?.();
-
-                const snappedX = Math.round(x.get() / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
-                const snappedY = Math.round(y.get() / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
-
-                animate(x, snappedX, {
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                    onUpdate: () => {
-                        throttledPositionChange(node.id);
-                    }
-                });
-                animate(y, snappedY, {
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                    onUpdate: () => {
-                        throttledPositionChange(node.id);
-                    }
-                });
-
+                const snappedX = snapToGrid(x.get());
+                const snappedY = snapToGrid(y.get());
+                animateToPosition(snappedX, snappedY);
                 dispatch(updateNodePosition({ id: node.id, x: snappedX, y: snappedY }));
             }}
             onMouseDown={(e) => {
-                // 如果点击的是调整大小的手柄，不触发选择
-                if ((e.target as HTMLElement).getAttribute('role') === 'button') {
-                    return;
-                }
+                if ((e.target as HTMLElement).getAttribute('role') === 'button') return;
                 onSelect?.(node.id, e.shiftKey);
             }}
             onFocus={() => onSelect?.(node.id, false)}
             tabIndex={0}
         >
             <div
-                onPointerDown={startDrag}
-                className="h-10 bg-base-200 rounded-t-lg flex items-center justify-center">
+                onPointerDown={(e) => dragControls.start(e)}
+                className="h-10 bg-base-200 rounded-t-lg flex items-center justify-center"
+            >
                 {node.name}
             </div>
             <div className="relative flex flex-col w-full h-[calc(100%-2.5rem)]">

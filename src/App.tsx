@@ -251,11 +251,27 @@ function App() {
         
         if (!sourceNode || !targetNode) return;
 
-        // 计算新的连接路径
-        const startX = sourceNode.position.x + (sourceNode.size?.width || EDITOR_CONFIG.node.defaultWidth);
-        const startY = sourceNode.position.y + 40; // 输出点的y位置
-        const endX = targetNode.position.x;
-        const endY = targetNode.position.y + 40; // 输入点的y位置
+        // 计算连接点的位置
+        const sourceButton = document.querySelector(`[data-node-id="${connection.sourceNodeId}"] [data-port="output"]`);
+        const targetButton = document.querySelector(`[data-node-id="${connection.targetNodeId}"] [data-port="input"]`);
+        
+        if (!sourceButton || !targetButton) return;
+
+        const sourceRect = sourceButton.getBoundingClientRect();
+        const targetRect = targetButton.getBoundingClientRect();
+        const canvas = document.querySelector('.editor-background')?.parentElement;
+        
+        if (!canvas) return;
+        
+        const canvasRect = canvas.getBoundingClientRect();
+        const scrollLeft = canvas.scrollLeft;
+        const scrollTop = canvas.scrollTop;
+
+        // 计算按钮中心点的位置
+        const startX = sourceRect.left + sourceRect.width / 2 - canvasRect.left + scrollLeft;
+        const startY = sourceRect.top + sourceRect.height / 2 - canvasRect.top + scrollTop;
+        const endX = targetRect.left + targetRect.width / 2 - canvasRect.left + scrollLeft;
+        const endY = targetRect.top + targetRect.height / 2 - canvasRect.top + scrollTop;
         
         const dx = endX - startX;
         const dy = endY - startY;

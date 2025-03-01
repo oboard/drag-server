@@ -105,12 +105,18 @@ export function BaseNode({
         animate(x, snappedX, {
             type: "spring",
             stiffness: 300,
-            damping: 30
+            damping: 30,
+            onUpdate: () => {
+                onPositionChange?.(node.id, x.get(), y.get());
+            }
         });
         animate(y, snappedY, {
             type: "spring",
             stiffness: 300,
-            damping: 30
+            damping: 30,
+            onUpdate: () => {
+                onPositionChange?.(node.id, x.get(), y.get());
+            }
         });
 
         // 更新 store
@@ -126,7 +132,7 @@ export function BaseNode({
         }));
 
         setResizeDirection(null);
-    }, [resizeDirection, node.id, dispatch, nodeWidth, nodeHeight, x, y]);
+    }, [resizeDirection, node.id, dispatch, nodeWidth, nodeHeight, x, y, onPositionChange]);
 
     React.useEffect(() => {
         if (resizeDirection) {
@@ -153,6 +159,7 @@ export function BaseNode({
     return (
         <motion.div
             data-node
+            data-node-id={node.id}
             className={`absolute min-w-48 min-h-48 bg-base-100 shadow-lg select-none rounded-lg overflow-hidden ${selected ? 'ring-2 ring-primary' : ''}`}
             drag
             _dragX={x}
@@ -171,24 +178,35 @@ export function BaseNode({
                 height: nodeHeight
             }}
             onDragStart={onDragStart}
+            onDrag={(e) => {
+                onPositionChange?.(node.id, x.get(), y.get());
+            }}
             onDragEnd={() => {
                 onDragEnd?.();
-                const snappedX = Math.round(x.get() / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
-                const snappedY = Math.round(y.get() / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
+                onPositionChange?.(node.id, x.get(), y.get());
 
-                animate(x, snappedX, {
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30
-                });
-                animate(y, snappedY, {
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30
-                });
+                // const snappedX = Math.round(x.get() / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
+                // const snappedY = Math.round(y.get() / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
 
-                dispatch(updateNodePosition({ id: node.id, x: snappedX, y: snappedY }));
-                onPositionChange?.(node.id, snappedX, snappedY);
+                // animate(x, snappedX, {
+                //     type: "spring",
+                //     stiffness: 300,
+                //     damping: 30,
+                //     onUpdate: () => {
+                //         // onPositionChange?.(node.id, x.get(), y.get());
+                //     }
+                // });
+                // animate(y, snappedY, {
+                //     type: "spring",
+                //     stiffness: 300,
+                //     damping: 30,
+                //     onUpdate: () => {
+                //         // onPositionChange?.(node.id, x.get(), y.get());
+                //     }
+                // });
+
+                // dispatch(updateNodePosition({ id: node.id, x: snappedX, y: snappedY }));
+                // onPositionChange?.(node.id, snappedX, snappedY);
             }}
             onMouseDown={(e) => {
                 // 如果点击的是调整大小的手柄，不触发选择

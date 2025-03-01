@@ -33,7 +33,7 @@ export function TextNodeComponent(props: TextNodeProps) {
         const scrollTop = canvas.scrollTop;
 
         const startPos = {
-            x: rect.right - canvasRect.left + scrollLeft,
+            x: rect.left + rect.width / 2 - canvasRect.left + scrollLeft,
             y: rect.top + rect.height / 2 - canvasRect.top + scrollTop
         };
         console.log('TextNode - Connection start position:', startPos);
@@ -52,6 +52,7 @@ export function TextNodeComponent(props: TextNodeProps) {
                         className='bg-base-200 rounded-full p-2 hover:bg-base-300 transition-colors'
                         onPointerDown={handleConnectionStart}
                         aria-label="Connect output"
+                        data-port="output"
                     >
                         <div className="w-2 h-2 rounded-full bg-primary" />
                     </button>

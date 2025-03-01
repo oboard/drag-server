@@ -5,6 +5,26 @@ import { useDispatch } from "react-redux";
 import { EDITOR_CONFIG } from '../../config/editor';
 import React from 'react';
 
+// 添加节流函数
+function throttle<T extends (...args: Parameters<T>) => ReturnType<T>>(
+    func: T,
+    limit: number
+): (...args: Parameters<T>) => ReturnType<T> {
+    let inThrottle = false;
+    let lastResult: ReturnType<T>;
+
+    return (...args: Parameters<T>) => {
+        if (!inThrottle) {
+            inThrottle = true;
+            lastResult = func(...args);
+            setTimeout(() => {
+                inThrottle = false;
+            }, limit);
+        }
+        return lastResult;
+    };
+}
+
 type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
 export interface BaseNodeProps {
@@ -39,6 +59,14 @@ export function BaseNode({
     const transform = useMotionTemplate`translate3d(${x}px, ${y}px, 0)`;
     const dragControls = useDragControls();
     const [resizeDirection, setResizeDirection] = React.useState<ResizeDirection | null>(null);
+
+    // 使用 useCallback 和 throttle 来优化位置更新
+    const throttledPositionChange = React.useCallback(
+        throttle((nodeId: string, x: number, y: number) => {
+            onPositionChange?.(nodeId, x, y);
+        }, 32), // 约30fps的更新频率
+        []
+    );
 
     const startDrag = (e: React.PointerEvent) => {
         dragControls.start(e);
@@ -178,35 +206,33 @@ export function BaseNode({
                 height: nodeHeight
             }}
             onDragStart={onDragStart}
-            onDrag={(e) => {
-                onPositionChange?.(node.id, x.get(), y.get());
+            onDrag={() => {
+                throttledPositionChange(node.id, x.get(), y.get());
             }}
             onDragEnd={() => {
                 onDragEnd?.();
-                onPositionChange?.(node.id, x.get(), y.get());
 
-                // const snappedX = Math.round(x.get() / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
-                // const snappedY = Math.round(y.get() / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
+                const snappedX = Math.round(x.get() / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
+                const snappedY = Math.round(y.get() / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
 
-                // animate(x, snappedX, {
-                //     type: "spring",
-                //     stiffness: 300,
-                //     damping: 30,
-                //     onUpdate: () => {
-                //         // onPositionChange?.(node.id, x.get(), y.get());
-                //     }
-                // });
-                // animate(y, snappedY, {
-                //     type: "spring",
-                //     stiffness: 300,
-                //     damping: 30,
-                //     onUpdate: () => {
-                //         // onPositionChange?.(node.id, x.get(), y.get());
-                //     }
-                // });
+                animate(x, snappedX, {
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                    onUpdate: () => {
+                        throttledPositionChange(node.id, x.get(), y.get());
+                    }
+                });
+                animate(y, snappedY, {
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                    onUpdate: () => {
+                        throttledPositionChange(node.id, x.get(), y.get());
+                    }
+                });
 
-                // dispatch(updateNodePosition({ id: node.id, x: snappedX, y: snappedY }));
-                // onPositionChange?.(node.id, snappedX, snappedY);
+                dispatch(updateNodePosition({ id: node.id, x: snappedX, y: snappedY }));
             }}
             onMouseDown={(e) => {
                 // 如果点击的是调整大小的手柄，不触发选择

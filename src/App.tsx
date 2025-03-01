@@ -1,20 +1,13 @@
 import { Node } from "./components/Node";
 import { useSelector } from 'react-redux';
 import { RootState } from './store';
+import { GridBackground } from './components/GridBackground';
+import { useState } from 'react';
 import "./App.css";
-
-// 定义实际节点（画布上的节点）
-interface Node {
-  id: string;
-  type: string;
-  name: string;
-  position: { x: number; y: number };
-  inputs: { id: string; name: string }[];
-  outputs: { id: string; name: string }[];
-}
 
 function App() {
   const nodes = useSelector((state: RootState) => state.flow.nodes);
+  const [isDragging, setIsDragging] = useState(false);
 
   // 可用节点类型列表
   const nodeTypes = [
@@ -82,11 +75,17 @@ function App() {
 
       {/* 右侧画布 */}
       <div
-        className="flex-1 relative overflow-hidden bg-grid-pattern select-none"
+        className="flex-1 relative overflow-scroll bg-grid-pattern select-none"
       >
-        <div className="absolute inset-0 bg-grid-pattern"></div>
+        <GridBackground visible={isDragging} />
         {nodes.map(node => (
-          <Node key={node.id} node={node} selected={false} />
+          <Node
+            key={node.id}
+            node={node}
+            selected={false}
+            onDragStart={() => setIsDragging(true)}
+            onDragEnd={() => setIsDragging(false)}
+          />
         ))}
       </div>
     </div>

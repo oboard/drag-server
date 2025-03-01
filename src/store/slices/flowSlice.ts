@@ -45,25 +45,19 @@ export const flowSlice = createSlice({
         conn => conn.sourceNodeId !== action.payload && conn.targetNodeId !== action.payload
       );
     },
-    selectNode: (state, action: PayloadAction<{ nodeId: string; multiSelect: boolean }>) => {
-      if (action.payload.multiSelect) {
-        const index = state.selectedNodeIds.indexOf(action.payload.nodeId);
-        if (index === -1) {
-          state.selectedNodeIds.push(action.payload.nodeId);
-        } else {
-          state.selectedNodeIds.splice(index, 1);
-        }
-      } else {
-        state.selectedNodeIds = [action.payload.nodeId];
-      }
+    selectNodes: (state, action: PayloadAction<string[]>) => {
+      state.selectedNodeIds = action.payload;
     },
     clearSelection: (state) => {
       state.selectedNodeIds = [];
     },
     deleteSelectedNodes: (state) => {
       state.nodes = state.nodes.filter((n: NodeObject) => !state.selectedNodeIds.includes(n.id));
+      state.connections = state.connections.filter(
+        conn => !state.selectedNodeIds.includes(conn.sourceNodeId) && !state.selectedNodeIds.includes(conn.targetNodeId)
+      );
       state.selectedNodeIds = [];
-    },
+    }
   }
 });
 
@@ -73,7 +67,7 @@ export const {
   updateNodeSize,
   updateNodeContent,
   deleteNode,
-  selectNode,
+  selectNodes,
   clearSelection,
   deleteSelectedNodes,
 } = flowSlice.actions;

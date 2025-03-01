@@ -45,17 +45,16 @@ export function TextNodeComponent(props: TextNodeProps) {
         <BaseNode {...props}>
             <div className="flex flex-col gap-2 p-2">
                 {/* output area */}
-                <div className='flex items-center gap-2 justify-end'>
+                <div className='flex items-center gap-2 justify-end translate-x-[16px]'>
                     <span>Value</span>
+
                     <button
                         type='button'
-                        className='bg-base-200 rounded-full p-2 hover:bg-base-300 transition-colors'
-                        onPointerDown={handleConnectionStart}
+                        className='bg-primary rounded-full w-4 h-4 hover:bg-primary/80 transition-colors'
+                        onPointerUp={handleConnectionStart}
                         aria-label="Connect output"
                         data-port="output"
-                    >
-                        <div className="w-2 h-2 rounded-full bg-primary" />
-                    </button>
+                    />
                 </div>
             </div>
             <textarea

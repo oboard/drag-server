@@ -188,7 +188,7 @@ export function BaseNode({
         <motion.div
             data-node
             data-node-id={node.id}
-            className={`absolute min-w-48 min-h-48 bg-base-100 shadow-lg select-none rounded-lg overflow-hidden ${selected ? 'ring-2 ring-primary' : ''}`}
+            className={`absolute min-w-48 min-h-48 bg-base-100 shadow-lg select-none rounded-lg ${selected ? 'ring-2 ring-primary' : ''}`}
             drag
             _dragX={x}
             _dragY={y}
@@ -246,7 +246,7 @@ export function BaseNode({
         >
             <div
                 onPointerDown={startDrag}
-                className="h-10 bg-base-200 flex items-center justify-center">
+                className="h-10 bg-base-200 rounded-t-lg flex items-center justify-center">
                 {node.name}
             </div>
             <div className="relative flex flex-col w-full h-[calc(100%-2.5rem)]">

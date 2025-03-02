@@ -9,9 +9,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { EDITOR_CONFIG } from './config/editor';
 import "./App.css";
 import { NodeFactory } from './components/NodeFactory';
-import type { NodeTypes } from './types/index';
+import { NodeType, NodeTypes } from './types/index';
 import { ConnectionLine } from './components/ConnectionLine';
-import type { Connection } from './types';
 
 interface DraggingConnection {
   sourceNodeId: string;
@@ -74,14 +73,20 @@ function App() {
       const snappedY = Math.round(y / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
 
       // 创建新节点
-      const newNode = {
+      const newNode: NodeTypes = {
         id: uuidv4(),
         type: data.type,
         name: data.name,
         position: { x: snappedX, y: snappedY },
+        size: { width: EDITOR_CONFIG.node.defaultWidth, height: EDITOR_CONFIG.node.defaultHeight },
+        content: '',
+        ports: data.type === NodeType.LOG ? [
+          { id: 'input', name: 'Value', type: 'input' as const }
+        ] : [
+          { id: 'output', name: 'Value', type: 'output' as const }
+        ],
         inputs: [],
-        outputs: [],
-        size: { width: EDITOR_CONFIG.node.defaultWidth, height: EDITOR_CONFIG.node.defaultHeight }
+        outputs: []
       };
 
       dispatch(addNode(newNode));
@@ -142,61 +147,61 @@ function App() {
   const handleSelectionEnd = useCallback(() => {
     setIsSelecting(false);
   }, []);
+  
+  const handleConnectionStart = useCallback((nodeId: string, outputId: string) => {
+    console.log('App - handleConnectionStart', { nodeId, outputId });
 
-  const handleConnectionStart = useCallback((nodeId: string, outputId: string, startPos: { x: number; y: number }) => {
-    console.log('App - handleConnectionStart', { nodeId, outputId, startPos });
+    // 获取画布和滚动位置
+    const canvas = document.querySelector('.editor-background')?.parentElement;
+    if (!canvas) return;
+    const canvasRect = canvas.getBoundingClientRect();
+    const scrollLeft = canvas.scrollLeft;
+    const scrollTop = canvas.scrollTop;
 
-    // 检查是否是从输入端口开始拖动
+    // 处理从输入端口开始拖动的情况
     if (outputId === 'input') {
-      // 查找连接到这个输入端口的现有连接
       const existingConnection = connections.find(conn =>
         conn.targetNodeId === nodeId && conn.targetInputId === 'input'
       );
 
       if (existingConnection) {
-        // 如果找到现有连接，删除它并开始新的连接
         dispatch(deleteConnection(existingConnection.id));
-
-        // 获取原始输出端口的位置
-        const sourceButton = document.querySelector(`[data-node-id="${existingConnection.sourceNodeId}"] [data-port="output"]`);
+        const sourceButton = document.querySelector(
+          `[data-node-id="${existingConnection.sourceNodeId}"] [data-port="output"]`
+        );
         if (!sourceButton) return;
 
-        const canvas = document.querySelector('.editor-background')?.parentElement;
-        if (!canvas) return;
-
-        const canvasRect = canvas.getBoundingClientRect();
         const sourceRect = sourceButton.getBoundingClientRect();
-        const scrollLeft = canvas.scrollLeft;
-        const scrollTop = canvas.scrollTop;
-
-        const realStartPos = {
+        const startPos = {
           x: sourceRect.left + sourceRect.width / 2 - canvasRect.left + scrollLeft,
           y: sourceRect.top + sourceRect.height / 2 - canvasRect.top + scrollTop
         };
 
-        // 从原始的输出端口开始新的连接
         setDraggingConnection({
           sourceNodeId: existingConnection.sourceNodeId,
           sourceOutputId: existingConnection.sourceOutputId,
-          startPos: realStartPos,
-          currentPos: {
-            x: startPos.x,
-            y: startPos.y
-          }
+          startPos,
+          currentPos: { ...startPos }
         });
         return;
       }
     }
 
-    // 正常的新连接逻辑
+    // 处理从输出端口开始拖动的情况
+    const sourceButton = document.querySelector(`[data-node-id="${nodeId}"] [data-port="${outputId}"]`);
+    if (!sourceButton) return;
+
+    const sourceRect = sourceButton.getBoundingClientRect();
+    const startPos = {
+      x: sourceRect.left + sourceRect.width / 2 - canvasRect.left + scrollLeft,
+      y: sourceRect.top + sourceRect.height / 2 - canvasRect.top + scrollTop
+    };
+
     setDraggingConnection({
       sourceNodeId: nodeId,
       sourceOutputId: outputId,
       startPos,
-      currentPos: {
-        x: startPos.x,
-        y: startPos.y
-      }
+      currentPos: { ...startPos }
     });
   }, [connections, dispatch]);
 
@@ -244,8 +249,17 @@ function App() {
       draggingConnection
     });
 
+    // 检查目标输入端口是否已经有连接
+    const existingConnection = connections.find(conn =>
+      conn.targetNodeId === targetNodeId && conn.targetInputId === targetInputId
+    );
+
     if (!draggingConnection) {
-      console.log('App - No dragging connection to end');
+      if (existingConnection) {
+        // 如果已经有连接，先删除它
+        dispatch(deleteConnection(existingConnection.id));
+        handleConnectionStart(existingConnection.sourceNodeId, existingConnection.sourceOutputId);
+      }
       return;
     }
 
@@ -255,11 +269,6 @@ function App() {
       setDraggingConnection(null);
       return;
     }
-
-    // 检查目标输入端口是否已经有连接
-    const existingConnection = connections.find(conn =>
-      conn.targetNodeId === targetNodeId && conn.targetInputId === targetInputId
-    );
 
     // 如果存在连接，先删除它
     if (existingConnection) {
@@ -286,7 +295,7 @@ function App() {
     console.log('App - Connection added');
 
     setDraggingConnection(null);
-  }, [draggingConnection, dispatch, connections]);
+  }, [draggingConnection, handleConnectionStart, dispatch, connections]);
 
   // 添加一个新的处理函数来处理画布上的指针事件
   const handleCanvasPointerUp = useCallback((e: React.PointerEvent) => {
@@ -394,7 +403,7 @@ function App() {
         {nodes.map(node => (
           <NodeFactory
             key={node.id}
-            node={node as unknown as NodeTypes}
+            node={node as NodeTypes}
             selected={selectedNodeIds.includes(node.id)}
             onSelect={(nodeId, multiSelect) => {
               if (multiSelect) {

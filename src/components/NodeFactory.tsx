@@ -8,8 +8,8 @@ export interface NodeFactoryProps {
     onSelect: (nodeId: string, multiSelect: boolean) => void;
     onDragStart?: () => void;
     onDragEnd?: () => void;
-    onConnectionStart?: (nodeId: string, outputId: string, startPos: { x: number; y: number }) => void;
-    onConnectionEnd?: (targetNodeId: string, targetInputId: string) => void;
+    onConnectionStart?: (nodeId: string, portId: string, startPos: { x: number; y: number }) => void;
+    onConnectionEnd?: (nodeId: string, portId: string) => void;
     onPositionChange?: (nodeId: string) => void;
 }
 

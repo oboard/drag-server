@@ -1,8 +1,9 @@
-import { Port } from '../components/nodes/NodePort';
+import { Port } from "types";
 
 export const NodeType = {
     TEXT: 'text',
-    LOG: 'log'
+    LOG: 'log',
+    ROUTER: 'router',
 } as const;
 
 export type NodeTypeEnum = typeof NodeType[keyof typeof NodeType];
@@ -24,9 +25,8 @@ export interface BaseNode {
     position: Position;
     size: Size;
     content: string;
-    ports: Port[];
-    inputs: never[];  // 空数组，表示不再使用
-    outputs: never[]; // 空数组，表示不再使用
+    inputs: Port[];
+    outputs: Port[];
 }
 
 export interface TextNode extends BaseNode {
@@ -35,6 +35,10 @@ export interface TextNode extends BaseNode {
 
 export interface LogNode extends BaseNode {
     type: typeof NodeType.LOG;
+}
+
+export interface RouterNode extends BaseNode {
+    type: typeof NodeType.ROUTER;
 }
 
 export interface Connection {
@@ -46,7 +50,7 @@ export interface Connection {
     path: string;
 }
 
-export type NodeTypes = TextNode | LogNode;
+export type NodeTypes = TextNode | LogNode | RouterNode;
 
 // 类型守卫函数
 export const isTextNode = (node: NodeTypes | undefined): node is TextNode => {
@@ -55,4 +59,8 @@ export const isTextNode = (node: NodeTypes | undefined): node is TextNode => {
 
 export const isLogNode = (node: NodeTypes | undefined): node is LogNode => {
     return node?.type === NodeType.LOG;
+};
+
+export const isRouterNode = (node: NodeTypes | undefined): node is RouterNode => {
+    return node?.type === NodeType.ROUTER;
 }; 

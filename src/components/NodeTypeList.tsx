@@ -14,6 +14,13 @@ const nodeTypes = [
         name: "日志",
         icon: "📝",
         description: "日志输出节点"
+    },
+    {
+        id: "router",
+        type: "router",
+        name: "路由",
+        icon: "🔄",
+        description: "路由节点"
     }
 ] as NodeTypeListItemProps[];
 

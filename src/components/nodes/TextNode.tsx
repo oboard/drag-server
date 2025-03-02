@@ -17,7 +17,8 @@ export function TextNodeComponent({ node, onConnectionStart, onConnectionEnd, ..
         <BaseNode resizable={true} node={node} {...props}>
             <div className="relative z-10">
                 <NodePorts
-                    ports={node.ports}
+                    type='output'
+                    ports={node.outputs}
                     nodeId={node.id}
                     onConnectionStart={onConnectionStart}
                     onConnectionEnd={onConnectionEnd}

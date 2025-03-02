@@ -1,19 +1,16 @@
 import React from 'react';
-
-export interface Port {
-    id: string;
-    name: string;
-    type: 'input' | 'output';
-}
+import { Port } from 'types';
+import clsx from 'clsx';
 
 interface NodePortProps {
     port: Port;
+    type: 'input' | 'output';
     nodeId: string;
     onConnectionStart?: (nodeId: string, portId: string, startPos: { x: number; y: number }) => void;
     onConnectionEnd?: (nodeId: string, portId: string) => void;
 }
 
-export function NodePort({ port, nodeId, onConnectionStart, onConnectionEnd }: NodePortProps) {
+export function NodePort({ port, type, nodeId, onConnectionStart, onConnectionEnd }: NodePortProps) {
     const [isHovering, setIsHovering] = React.useState(false);
     const buttonRef = React.useRef<HTMLButtonElement>(null);
 
@@ -29,7 +26,7 @@ export function NodePort({ port, nodeId, onConnectionStart, onConnectionEnd }: N
             y: rect.top + rect.height / 2 - canvasRect.top + canvas.scrollTop
         };
 
-        if (port.type === 'output') {
+        if (type === 'output') {
             onConnectionStart?.(nodeId, port.id, pos);
         } else {
             onConnectionEnd?.(nodeId, port.id);
@@ -37,8 +34,11 @@ export function NodePort({ port, nodeId, onConnectionStart, onConnectionEnd }: N
     };
 
     return (
-        <div className={`flex items-center gap-2 ${port.type === 'output' ? 'justify-end' : ''}`}>
-            {port.type === 'input' && (
+        <div className={clsx(["flex items-center gap-2"], {
+            "justify-end": type === 'output',
+            "justify-start": type === 'input',
+        })}>
+            {type === 'input' && (
                 <button
                     ref={buttonRef}
                     type='button'
@@ -55,7 +55,7 @@ export function NodePort({ port, nodeId, onConnectionStart, onConnectionEnd }: N
                 />
             )}
             <span>{port.name}</span>
-            {port.type === 'output' && (
+            {type === 'output' && (
                 <button
                     ref={buttonRef}
                     type='button'
@@ -73,36 +73,28 @@ export function NodePort({ port, nodeId, onConnectionStart, onConnectionEnd }: N
 
 export function NodePorts({
     ports,
+    type,
     nodeId,
     onConnectionStart,
     onConnectionEnd
 }: {
     ports: Port[];
+    type: 'input' | 'output';
     nodeId: string;
     onConnectionStart?: (nodeId: string, portId: string, startPos: { x: number; y: number }) => void;
     onConnectionEnd?: (nodeId: string, portId: string) => void;
 }) {
-    const inputPorts = ports.filter(port => port.type === 'input');
-    const outputPorts = ports.filter(port => port.type === 'output');
-
     return (
         <div className="flex flex-col gap-2">
-            <div className="flex flex-col gap-2 translate-x-[-8px]">
-                {inputPorts.map(port => (
+            <div className={clsx(["flex flex-col gap-2"], {
+                "translate-x-[8px]": type === 'output',
+                "translate-x-[-8px]": type === 'input',
+            })}>
+                {ports.map(port => (
                     <NodePort
                         key={port.id}
                         port={port}
-                        nodeId={nodeId}
-                        onConnectionStart={onConnectionStart}
-                        onConnectionEnd={onConnectionEnd}
-                    />
-                ))}
-            </div>
-            <div className="flex flex-col gap-2 translate-x-[8px]">
-                {outputPorts.map(port => (
-                    <NodePort
-                        key={port.id}
-                        port={port}
+                        type={type}
                         nodeId={nodeId}
                         onConnectionStart={onConnectionStart}
                         onConnectionEnd={onConnectionEnd}

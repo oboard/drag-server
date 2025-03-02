@@ -1,5 +1,6 @@
 import { NodeTypes, NodeType } from '../types/index';
 import { LogNodeComponent } from './nodes/LogNode';
+import { RouterNodeComponent } from './nodes/RouterNode';
 import { TextNodeComponent } from './nodes/TextNode';
 
 export interface NodeFactoryProps {
@@ -21,6 +22,8 @@ export function NodeFactory(props: NodeFactoryProps) {
             return <TextNodeComponent {...props} node={node} />;
         case NodeType.LOG:
             return <LogNodeComponent {...props} node={node} />;
+        case NodeType.ROUTER:
+            return <RouterNodeComponent {...props} node={node} />;
     }
 
     const unknownNode = node as { type: string };

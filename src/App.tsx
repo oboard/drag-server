@@ -9,8 +9,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { EDITOR_CONFIG } from './config/editor';
 import "./App.css";
 import { NodeFactory } from './components/NodeFactory';
-import { NodeType, NodeTypes } from './types/index';
+import { NodeType, NodeTypeEnum, NodeTypes } from './types/index';
 import { ConnectionLine } from './components/ConnectionLine';
+import { Port } from 'types';
 
 interface DraggingConnection {
   sourceNodeId: string;
@@ -71,6 +72,39 @@ function App() {
       // 对齐到网格
       const snappedX = Math.round(x / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
       const snappedY = Math.round(y / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
+      const getInputs = (type: NodeTypeEnum): Port[] => {
+        switch (type) {
+          case NodeType.LOG:
+            return [{ id: 'input', name: 'Value', type: 'any' }];
+          case NodeType.ROUTER:
+            return [
+              { id: 'input', name: 'Path', type: 'string' },
+              { id: 'input', name: 'Value', type: 'any' }
+            ];
+          default:
+            return [];
+        }
+      };
+
+      const getOutputs = (type: NodeTypeEnum): Port[] => {
+        switch (type) {
+          case NodeType.TEXT:
+            return [{ id: 'output', name: 'Value', type: 'string' }];
+          default:
+            return [];
+        }
+      };
+
+      const getHeight = (type: NodeTypeEnum): number => {
+        switch (type) {
+          case NodeType.TEXT:
+            return EDITOR_CONFIG.node.defaultHeight;
+          case NodeType.ROUTER:
+            return EDITOR_CONFIG.node.defaultHeight + EDITOR_CONFIG.grid.size;
+          default:
+            return EDITOR_CONFIG.node.defaultHeight;
+        }
+      };
 
       // 创建新节点
       const newNode: NodeTypes = {
@@ -78,15 +112,10 @@ function App() {
         type: data.type,
         name: data.name,
         position: { x: snappedX, y: snappedY },
-        size: { width: EDITOR_CONFIG.node.defaultWidth, height: EDITOR_CONFIG.node.defaultHeight },
+        size: { width: EDITOR_CONFIG.node.defaultWidth, height: getHeight(data.type) },
         content: '',
-        ports: data.type === NodeType.LOG ? [
-          { id: 'input', name: 'Value', type: 'input' as const }
-        ] : [
-          { id: 'output', name: 'Value', type: 'output' as const }
-        ],
-        inputs: [],
-        outputs: []
+        inputs: getInputs(data.type),
+        outputs: getOutputs(data.type)
       };
 
       dispatch(addNode(newNode));

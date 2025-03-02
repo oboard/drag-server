@@ -17,7 +17,7 @@ export interface NodeInfo extends BaseNode {
 export interface Port {
   id: string;
   name: string;
-  type: 'input' | 'output';
+  type: 'string' | 'number' | 'any';
 }
 
 // 节点大小

@@ -18,7 +18,8 @@ export function LogNodeComponent(props: LogNodeProps) {
             </div>
             <div className="relative z-10 my-2">
                 <NodePorts
-                    ports={props.node.ports}
+                    type='input'
+                    ports={props.node.inputs}
                     nodeId={props.node.id}
                     onConnectionStart={props.onConnectionStart}
                     onConnectionEnd={props.onConnectionEnd}

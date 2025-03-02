@@ -16,7 +16,7 @@ export function LogNodeComponent(props: LogNodeProps) {
                     {props.node.content}
                 </p>
             </div>
-            <div className="relative z-10">
+            <div className="relative z-10 my-2">
                 <NodePorts
                     ports={props.node.ports}
                     nodeId={props.node.id}

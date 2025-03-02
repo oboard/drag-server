@@ -148,8 +148,14 @@ export function BaseNode({
         const snappedY = snapToGrid(y.get());
 
         // 动画过渡到对齐位置
-        animate(nodeWidth, snappedWidth, { type: "spring", stiffness: 300, damping: 30 });
-        animate(nodeHeight, snappedHeight, { type: "spring", stiffness: 300, damping: 30 });
+        animate(nodeWidth, snappedWidth, {
+            type: "spring", stiffness: 300, damping: 30,
+            onUpdate: () => throttledPositionChange(node.id)
+        });
+        animate(nodeHeight, snappedHeight, {
+            type: "spring", stiffness: 300, damping: 30,
+            onUpdate: () => throttledPositionChange(node.id)
+        });
         animateToPosition(snappedX, snappedY);
 
         // 更新 store
@@ -157,7 +163,7 @@ export function BaseNode({
         dispatch(updateNodePosition({ id: node.id, x: snappedX, y: snappedY }));
 
         setResizeDirection(null);
-    }, [resizeDirection, node.id, dispatch, nodeWidth, nodeHeight, x, y, snapToGrid, animateToPosition]);
+    }, [resizeDirection, node.id, dispatch, nodeWidth, nodeHeight, x, y, snapToGrid, animateToPosition, throttledPositionChange]);
 
     React.useEffect(() => {
         if (resizeDirection) {

@@ -147,7 +147,7 @@ function App() {
   const handleSelectionEnd = useCallback(() => {
     setIsSelecting(false);
   }, []);
-  
+
   const handleConnectionStart = useCallback((nodeId: string, outputId: string) => {
     console.log('App - handleConnectionStart', { nodeId, outputId });
 

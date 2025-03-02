@@ -39,7 +39,7 @@ export function RouterNodeComponent({ node, onConnectionStart, onConnectionEnd, 
                     }))}
                 />
             </div>
-            <div className="relative z-10">
+            <div className="relative z-10 my-2">
                 <NodePorts
                     type='input'
                     ports={node.inputs}

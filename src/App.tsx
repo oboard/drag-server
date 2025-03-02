@@ -78,7 +78,6 @@ function App() {
             return [{ id: 'input', name: 'Value', type: 'any' }];
           case NodeType.ROUTER:
             return [
-              { id: 'input', name: 'Path', type: 'string' },
               { id: 'input', name: 'Value', type: 'any' }
             ];
           default:
@@ -97,10 +96,10 @@ function App() {
 
       const getHeight = (type: NodeTypeEnum): number => {
         switch (type) {
-          case NodeType.TEXT:
-            return EDITOR_CONFIG.node.defaultHeight;
-          case NodeType.ROUTER:
-            return EDITOR_CONFIG.node.defaultHeight + EDITOR_CONFIG.grid.size;
+          // case NodeType.TEXT:
+          //   return EDITOR_CONFIG.node.defaultHeight;
+          // case NodeType.ROUTER:
+          //   return EDITOR_CONFIG.node.defaultHeight + EDITOR_CONFIG.grid.size;
           default:
             return EDITOR_CONFIG.node.defaultHeight;
         }

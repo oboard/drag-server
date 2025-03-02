@@ -205,17 +205,36 @@ function App() {
 
     const canvas = e.currentTarget;
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left + canvas.scrollLeft;
-    const y = e.clientY - rect.top + canvas.scrollTop;
 
-    console.log('App - handleConnectionMove', { x, y, current: draggingConnection.currentPos });
-    setDraggingConnection(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        currentPos: { x, y }
-      };
-    });
+    // 检查是否有正在悬停的输入端口
+    const hoveringInput = document.querySelector('[data-port="input"][data-hovering="true"]') as HTMLElement;
+
+    if (hoveringInput) {
+      // 如果有悬停的输入端口，获取其中心点位置
+      const inputRect = hoveringInput.getBoundingClientRect();
+      const x = inputRect.left + inputRect.width / 2 - rect.left + canvas.scrollLeft;
+      const y = inputRect.top + inputRect.height / 2 - rect.top + canvas.scrollTop;
+
+      setDraggingConnection(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          currentPos: { x, y }
+        };
+      });
+    } else {
+      // 如果没有悬停的输入端口，使用鼠标位置
+      const x = e.clientX - rect.left + canvas.scrollLeft;
+      const y = e.clientY - rect.top + canvas.scrollTop;
+
+      setDraggingConnection(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          currentPos: { x, y }
+        };
+      });
+    }
   }, [draggingConnection]);
 
   const handleConnectionEnd = useCallback((targetNodeId: string, targetInputId: string) => {

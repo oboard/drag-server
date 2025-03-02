@@ -2,6 +2,7 @@ import { BaseNode, BaseNodeProps } from './BaseNode';
 import { LogNode } from 'types/index';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import React from 'react';
 
 interface LogNodeProps extends Omit<BaseNodeProps, 'node' | 'resizable'> {
     node: LogNode;
@@ -11,6 +12,8 @@ interface LogNodeProps extends Omit<BaseNodeProps, 'node' | 'resizable'> {
 
 export function LogNodeComponent(props: LogNodeProps) {
     const connections = useSelector((state: RootState) => state.flow.present.connections);
+    const [isHovering, setIsHovering] = React.useState(false);
+    const buttonRef = React.useRef<HTMLButtonElement>(null);
 
     const handleConnectionEnd = (_e: React.PointerEvent<HTMLButtonElement>) => {
         props.onConnectionEnd?.(props.node.id, 'input');
@@ -50,10 +53,14 @@ export function LogNodeComponent(props: LogNodeProps) {
                 {/* input area */}
                 <div className='flex items-center gap-2'>
                     <button
+                        ref={buttonRef}
                         type='button'
                         className='bg-primary rounded-full w-4 h-4 hover:bg-secondary transition-colors'
                         onPointerUp={handleConnectionEnd}
                         onPointerDown={handleConnectionStart}
+                        onPointerEnter={() => setIsHovering(true)}
+                        onPointerLeave={() => setIsHovering(false)}
+                        data-hovering={isHovering}
                         aria-label="Connect input"
                         data-port="input"
                     />

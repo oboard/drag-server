@@ -4,6 +4,7 @@ export const NodeType = {
     TEXT: 'text',
     LOG: 'log',
     ROUTER: 'router',
+    PORT: 'port',
 } as const;
 
 export type NodeTypeEnum = typeof NodeType[keyof typeof NodeType];

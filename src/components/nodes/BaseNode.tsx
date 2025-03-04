@@ -66,7 +66,7 @@ export function BaseNodeComponent({
     x: externalX,
     y: externalY,
     children
-}: BaseNodeComponentProps & { children: React.ReactNode }) {
+}: BaseNodeComponentProps & { children?: React.ReactNode }) {
     const dispatch = useDispatch();
     const x = externalX || useMotionValue(node.position.x);
     const y = externalY || useMotionValue(node.position.y);

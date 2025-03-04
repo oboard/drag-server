@@ -21,6 +21,13 @@ const nodeTypes = [
         name: "路由",
         icon: "🔄",
         description: "路由节点"
+    },
+    {
+        id: "port",
+        type: "port",
+        name: "端口",
+        icon: "🔌",
+        description: "端口节点"
     }
 ] as NodeTypeListItemProps[];
 

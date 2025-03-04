@@ -1,6 +1,9 @@
 import React from 'react';
 import { Port } from 'types';
 import clsx from 'clsx';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../../store';
+import { updatePortValue } from '../../store/slices/flowSlice';
 
 interface NodePortProps {
     port: Port;
@@ -10,9 +13,22 @@ interface NodePortProps {
     onConnectionEnd?: (nodeId: string, portId: string) => void;
 }
 
-export function NodePort({ port, type, nodeId, onConnectionStart, onConnectionEnd }: NodePortProps) {
+export function NodePortComponent({ port, type, nodeId, onConnectionStart, onConnectionEnd }: NodePortProps) {
     const [isHovering, setIsHovering] = React.useState(false);
     const buttonRef = React.useRef<HTMLButtonElement>(null);
+    const dispatch = useDispatch();
+    const connections = useSelector((state: RootState) => state.flow.present.connections);
+    const portValue = useSelector((state: RootState) => 
+        state.flow.present.portValues[nodeId]?.[port.id] ?? ''
+    );
+
+    // 检查端口是否已连接
+    const isConnected = React.useMemo(() => {
+        return connections.some(conn =>
+            (type === 'input' && conn.targetNodeId === nodeId && conn.targetInputId === port.id) ||
+            (type === 'output' && conn.sourceNodeId === nodeId && conn.sourceOutputId === port.id)
+        );
+    }, [connections, nodeId, port.id, type]);
 
     const handleConnectionEvent = (e: React.PointerEvent<HTMLButtonElement>) => {
         const button = e.currentTarget;
@@ -33,39 +49,68 @@ export function NodePort({ port, type, nodeId, onConnectionStart, onConnectionEn
         }
     };
 
+    const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = port.type === 'number' ? Number(e.target.value) : e.target.value;
+        dispatch(updatePortValue({ nodeId, portId: port.id, value }));
+    };
+
     return (
         <div className={clsx(["flex items-center gap-2"], {
             "justify-end": type === 'output',
             "justify-start": type === 'input',
         })}>
             {type === 'input' && (
-                <button
-                    ref={buttonRef}
-                    type='button'
-                    className='bg-primary rounded-full w-4 h-4 hover:bg-secondary transition-colors'
-                    onPointerUp={handleConnectionEvent}
-                    onPointerDown={handleConnectionEvent}
-                    onPointerEnter={() => setIsHovering(true)}
-                    onPointerLeave={() => setIsHovering(false)}
-                    data-hovering={isHovering}
-                    aria-label={`Connect ${port.type}`}
-                    data-port={port.id}
-                    data-port-type={port.type}
-                    data-node-id={nodeId}
-                />
+                <>
+                    <button
+                        ref={buttonRef}
+                        type='button'
+                        className='bg-primary rounded-full w-4 h-4 hover:bg-secondary transition-colors'
+                        onPointerUp={handleConnectionEvent}
+                        onPointerDown={handleConnectionEvent}
+                        onPointerEnter={() => setIsHovering(true)}
+                        onPointerLeave={() => setIsHovering(false)}
+                        data-hovering={isHovering}
+                        aria-label={`Connect ${port.type}`}
+                        data-port={port.id}
+                        data-port-type={port.type}
+                        data-node-id={nodeId}
+                    />
+                    <span>{port.name}</span>
+                    {!isConnected && (
+                        port.type === 'string' ? (
+                            <input
+                                type="text"
+                                className="input input-xs input-bordered w-24"
+                                placeholder={port.name}
+                                value={portValue}
+                                onChange={handleValueChange}
+                            />
+                        ) : port.type === 'number' ? (
+                            <input
+                                type="number"
+                                className="input input-xs input-bordered w-24"
+                                placeholder={port.name}
+                                value={portValue}
+                                onChange={handleValueChange}
+                            />
+                        ) : null
+                    )}
+                </>
             )}
-            <span>{port.name}</span>
             {type === 'output' && (
-                <button
-                    ref={buttonRef}
-                    type='button'
-                    className='bg-primary rounded-full w-4 h-4 hover:bg-secondary transition-colors'
-                    onPointerDown={handleConnectionEvent}
-                    aria-label={`Connect ${port.type}`}
-                    data-port={port.id}
-                    data-port-type={port.type}
-                    data-node-id={nodeId}
-                />
+                <>
+                    <span>{port.name}</span>
+                    <button
+                        ref={buttonRef}
+                        type='button'
+                        className='bg-primary rounded-full w-4 h-4 hover:bg-secondary transition-colors'
+                        onPointerDown={handleConnectionEvent}
+                        aria-label={`Connect ${port.type}`}
+                        data-port={port.id}
+                        data-port-type={port.type}
+                        data-node-id={nodeId}
+                    />
+                </>
             )}
         </div>
     );
@@ -91,7 +136,7 @@ export function NodePorts({
                 "translate-x-[-8px]": type === 'input',
             })}>
                 {ports.map(port => (
-                    <NodePort
+                    <NodePortComponent
                         key={port.id}
                         port={port}
                         type={type}

@@ -78,7 +78,12 @@ function App() {
             return [{ id: 'input', name: 'Value', type: 'any' }];
           case NodeType.ROUTER:
             return [
-              { id: 'path', name: 'path', type: 'string' },
+              { id: 'path', name: 'Path', type: 'string' },
+              { id: 'input', name: 'Value', type: 'any' }
+            ];
+          case NodeType.PORT:
+            return [
+              { id: 'port', name: 'Port', type: 'number' },
               { id: 'input', name: 'Value', type: 'any' }
             ];
           default:

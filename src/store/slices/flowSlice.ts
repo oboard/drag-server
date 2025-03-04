@@ -5,12 +5,14 @@ interface FlowState {
   nodes: NodeTypes[];
   connections: Connection[];
   selectedNodeIds: string[];
+  portValues: Record<string, Record<string, string | number>>;  // nodeId -> portId -> value
 }
 
 const initialState: FlowState = {
   nodes: [],
   connections: [],
   selectedNodeIds: [],
+  portValues: {},
 };
 
 export const flowSlice = createSlice({
@@ -44,6 +46,7 @@ export const flowSlice = createSlice({
       state.connections = state.connections.filter(
         conn => conn.sourceNodeId !== action.payload && conn.targetNodeId !== action.payload
       );
+      delete state.portValues[action.payload];
     },
     selectNodes: (state, action: PayloadAction<string[]>) => {
       state.selectedNodeIds = action.payload;
@@ -69,7 +72,18 @@ export const flowSlice = createSlice({
       if (connection) {
         connection.path = action.payload.path;
       }
-    }
+    },
+    updatePortValue: (state, action: PayloadAction<{ 
+      nodeId: string; 
+      portId: string; 
+      value: string | number 
+    }>) => {
+      const { nodeId, portId, value } = action.payload;
+      if (!state.portValues[nodeId]) {
+        state.portValues[nodeId] = {};
+      }
+      state.portValues[nodeId][portId] = value;
+    },
   }
 });
 
@@ -85,6 +99,7 @@ export const {
   addConnection,
   deleteConnection,
   updateConnection,
+  updatePortValue,
 } = flowSlice.actions;
 
 export default flowSlice.reducer; 

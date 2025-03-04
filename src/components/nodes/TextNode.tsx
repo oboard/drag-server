@@ -1,4 +1,4 @@
-import { BaseNodeComponent, BaseNodeComponentProps } from './BaseNodeComponent';
+import { BaseNodeComponent, BaseNodeComponentProps } from './BaseNode';
 import { useDispatch } from 'react-redux';
 import { updateNodeContent } from '../../store';
 

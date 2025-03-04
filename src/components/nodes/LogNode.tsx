@@ -1,4 +1,4 @@
-import { BaseNodeComponent, BaseNodeComponentProps } from './BaseNodeComponent';
+import { BaseNodeComponent, BaseNodeComponentProps } from './BaseNode';
 
 export function LogNodeComponent(props: BaseNodeComponentProps) {
     return (

@@ -1,5 +1,5 @@
 import { NodeTypes, NodeType } from '../types/index';
-import { BaseNodeComponent } from './nodes/BaseNodeComponent';
+import { BaseNodeComponent } from './nodes/BaseNode';
 import { LogNodeComponent } from './nodes/LogNode';
 import { TextNodeComponent } from './nodes/TextNode';
 
@@ -22,13 +22,8 @@ export function NodeFactory(props: NodeFactoryProps) {
             return <TextNodeComponent {...props} node={node} />;
         case NodeType.LOG:
             return <LogNodeComponent {...props} node={node} />;
-        case NodeType.ROUTER:
-            return <BaseNodeComponent {...props} node={node}>
-                <span>Router</span>
-            </BaseNodeComponent>;
-    }
 
-    const unknownNode = node as { type: string };
-    console.error('Unknown node type:', unknownNode.type);
-    return null;
+        default:
+            return <BaseNodeComponent {...props} node={node} />;
+    }
 } 

@@ -14,7 +14,7 @@ export interface NodeInfo extends BaseNode {
 }
 
 // 节点端口类型
-export interface Port {
+export interface PropertyInfo {
   id: string;
   name: string;
   type: 'string' | 'response' | 'number' | 'any';
@@ -28,9 +28,9 @@ export interface NodeSize {
 
 // 节点对象
 export interface NodeObject extends BaseNode {
-  inputs: Port[];
-  outputs: Port[];
-  ports: Port[];
+  inputs: PropertyInfo[];
+  outputs: PropertyInfo[];
+  ports: PropertyInfo[];
   content: string;
 }
 

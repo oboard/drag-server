@@ -1,34 +1,34 @@
 import React from 'react';
-import { Port } from 'types';
+import { PropertyInfo } from 'types';
 import clsx from 'clsx';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { updatePortValue } from '../../store/slices/flowSlice';
 
 interface NodePortProps {
-    port: Port;
+    property: PropertyInfo;
     type: 'input' | 'output';
     nodeId: string;
     onConnectionStart?: (nodeId: string, portId: string, startPos: { x: number; y: number }) => void;
     onConnectionEnd?: (nodeId: string, portId: string) => void;
 }
 
-export function NodePortComponent({ port, type, nodeId, onConnectionStart, onConnectionEnd }: NodePortProps) {
+export function NodePropertyComponent({ property, type, nodeId, onConnectionStart, onConnectionEnd }: NodePortProps) {
     const [isHovering, setIsHovering] = React.useState(false);
     const buttonRef = React.useRef<HTMLButtonElement>(null);
     const dispatch = useDispatch();
     const connections = useSelector((state: RootState) => state.flow.present.connections);
-    const portValue = useSelector((state: RootState) => 
-        state.flow.present.portValues[nodeId]?.[port.id] ?? ''
+    const portValue = useSelector((state: RootState) =>
+        state.flow.present.properties[nodeId]?.[property.id] ?? ''
     );
 
     // 检查端口是否已连接
     const isConnected = React.useMemo(() => {
         return connections.some(conn =>
-            (type === 'input' && conn.targetNodeId === nodeId && conn.targetInputId === port.id) ||
-            (type === 'output' && conn.sourceNodeId === nodeId && conn.sourceOutputId === port.id)
+            (type === 'input' && conn.targetNodeId === nodeId && conn.targetInputId === property.id) ||
+            (type === 'output' && conn.sourceNodeId === nodeId && conn.sourceOutputId === property.id)
         );
-    }, [connections, nodeId, port.id, type]);
+    }, [connections, nodeId, property.id, type]);
 
     const handleConnectionEvent = (e: React.PointerEvent<HTMLButtonElement>) => {
         const button = e.currentTarget;
@@ -43,15 +43,15 @@ export function NodePortComponent({ port, type, nodeId, onConnectionStart, onCon
         };
 
         if (type === 'output') {
-            onConnectionStart?.(nodeId, port.id, pos);
+            onConnectionStart?.(nodeId, property.id, pos);
         } else {
-            onConnectionEnd?.(nodeId, port.id);
+            onConnectionEnd?.(nodeId, property.id);
         }
     };
 
     const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = port.type === 'number' ? Number(e.target.value) : e.target.value;
-        dispatch(updatePortValue({ nodeId, portId: port.id, value }));
+        const value = property.type === 'number' ? Number(e.target.value) : e.target.value;
+        dispatch(updatePortValue({ nodeId, portId: property.id, value }));
     };
 
     return (
@@ -70,26 +70,26 @@ export function NodePortComponent({ port, type, nodeId, onConnectionStart, onCon
                         onPointerEnter={() => setIsHovering(true)}
                         onPointerLeave={() => setIsHovering(false)}
                         data-hovering={isHovering}
-                        aria-label={`Connect ${port.type}`}
-                        data-port={port.id}
-                        data-port-type={port.type}
+                        aria-label={`Connect ${property.type}`}
+                        data-property={property.id}
+                        data-property-type={property.type}
                         data-node-id={nodeId}
                     />
-                    <span>{port.name}</span>
+                    <span>{property.name}</span>
                     {!isConnected && (
-                        port.type === 'string' ? (
+                        property.type === 'string' ? (
                             <input
                                 type="text"
                                 className="input input-xs input-bordered w-24"
-                                placeholder={port.name}
+                                placeholder={property.name}
                                 value={portValue}
                                 onChange={handleValueChange}
                             />
-                        ) : port.type === 'number' ? (
+                        ) : property.type === 'number' ? (
                             <input
                                 type="number"
                                 className="input input-xs input-bordered w-24"
-                                placeholder={port.name}
+                                placeholder={property.name}
                                 value={portValue}
                                 onChange={handleValueChange}
                             />
@@ -99,15 +99,15 @@ export function NodePortComponent({ port, type, nodeId, onConnectionStart, onCon
             )}
             {type === 'output' && (
                 <>
-                    <span>{port.name}</span>
+                    <span>{property.name}</span>
                     <button
                         ref={buttonRef}
                         type='button'
                         className='bg-primary rounded-full w-4 h-4 hover:bg-secondary transition-colors'
                         onPointerDown={handleConnectionEvent}
-                        aria-label={`Connect ${port.type}`}
-                        data-port={port.id}
-                        data-port-type={port.type}
+                        aria-label={`Connect ${property.type}`}
+                        data-property={property.id}
+                        data-property-type={property.type}
                         data-node-id={nodeId}
                     />
                 </>
@@ -116,14 +116,14 @@ export function NodePortComponent({ port, type, nodeId, onConnectionStart, onCon
     );
 }
 
-export function NodePorts({
-    ports,
+export function NodeProperties({
+    ports: properties,
     type,
     nodeId,
     onConnectionStart,
     onConnectionEnd
 }: {
-    ports: Port[];
+    ports: PropertyInfo[];
     type: 'input' | 'output';
     nodeId: string;
     onConnectionStart?: (nodeId: string, portId: string, startPos: { x: number; y: number }) => void;
@@ -135,10 +135,10 @@ export function NodePorts({
                 "translate-x-[8px]": type === 'output',
                 "translate-x-[-8px]": type === 'input',
             })}>
-                {ports.map(port => (
-                    <NodePortComponent
-                        key={port.id}
-                        port={port}
+                {properties.map(property => (
+                    <NodePropertyComponent
+                        key={property.id}
+                        property={property}
                         type={type}
                         nodeId={nodeId}
                         onConnectionStart={onConnectionStart}

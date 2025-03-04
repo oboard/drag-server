@@ -4,7 +4,7 @@ import { updateNodePosition, updateNodeSize } from "../../store";
 import { useDispatch } from "react-redux";
 import { EDITOR_CONFIG } from '../../config/editor';
 import React from 'react';
-import { NodePorts } from "./NodePort";
+import { NodeProperties } from "./NodeProperty";
 
 // 添加节流函数
 function throttle<T extends (...args: Parameters<T>) => ReturnType<T>>(
@@ -219,7 +219,7 @@ export function BaseNodeComponent({
             </div>
             <div className="relative flex flex-col w-full h-[calc(100%-2.5rem)]">
                 <div className="relative z-10">
-                    <NodePorts
+                    <NodeProperties
                         type='output'
                         ports={node.outputs}
                         nodeId={node.id}
@@ -229,7 +229,7 @@ export function BaseNodeComponent({
                 </div>
                 {children}
                 <div className="relative z-10 my-2">
-                    <NodePorts
+                    <NodeProperties
                         type='input'
                         ports={node.inputs}
                         nodeId={node.id}

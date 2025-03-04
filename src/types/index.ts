@@ -1,4 +1,4 @@
-import { Port } from "types";
+import { PropertyInfo } from "types";
 
 export const NodeType = {
     TEXT: 'text',
@@ -26,8 +26,8 @@ export interface BaseNode {
     position: Position;
     size: Size;
     content: string;
-    inputs: Port[];
-    outputs: Port[];
+    inputs: PropertyInfo[];
+    outputs: PropertyInfo[];
 }
 
 export interface TextNode extends BaseNode {

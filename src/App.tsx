@@ -11,7 +11,7 @@ import "./App.css";
 import { NodeFactory } from './components/NodeFactory';
 import { NodeType, NodeTypeEnum, NodeTypes } from './types/index';
 import { ConnectionLine } from './components/ConnectionLine';
-import { Port } from 'types';
+import { PropertyInfo } from 'types';
 
 interface DraggingConnection {
   sourceNodeId: string;
@@ -72,7 +72,7 @@ function App() {
       // 对齐到网格
       const snappedX = Math.round(x / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
       const snappedY = Math.round(y / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
-      const getInputs = (type: NodeTypeEnum): Port[] => {
+      const getInputs = (type: NodeTypeEnum): PropertyInfo[] => {
         switch (type) {
           case NodeType.LOG:
             return [{ id: 'input', name: 'Value', type: 'any' }];
@@ -91,7 +91,7 @@ function App() {
         }
       };
 
-      const getOutputs = (type: NodeTypeEnum): Port[] => {
+      const getOutputs = (type: NodeTypeEnum): PropertyInfo[] => {
         switch (type) {
           case NodeType.TEXT:
             return [{ id: 'output', name: 'Value', type: 'string' }];
@@ -203,7 +203,7 @@ function App() {
       if (existingConnection) {
         dispatch(deleteConnection(existingConnection.id));
         const sourceButton = document.querySelector(
-          `[data-node-id="${existingConnection.sourceNodeId}"] [data-port="output"]`
+          `[data-node-id="${existingConnection.sourceNodeId}"] [data-property="output"]`
         );
         if (!sourceButton) return;
 
@@ -224,7 +224,7 @@ function App() {
     }
 
     // 处理从输出端口开始拖动的情况
-    const sourceButton = document.querySelector(`[data-node-id="${nodeId}"] [data-port="${outputId}"]`);
+    const sourceButton = document.querySelector(`[data-node-id="${nodeId}"] [data-property="${outputId}"]`);
     if (!sourceButton) return;
 
     const sourceRect = sourceButton.getBoundingClientRect();
@@ -248,7 +248,7 @@ function App() {
     const rect = canvas.getBoundingClientRect();
 
     // 检查是否有正在悬停的输入端口
-    const hoveringInput = document.querySelector('[data-port="input"][data-hovering="true"]') as HTMLElement;
+    const hoveringInput = document.querySelector('[data-property="input"][data-hovering="true"]') as HTMLElement;
 
     if (hoveringInput) {
       // 如果有悬停的输入端口，获取其中心点位置
@@ -355,8 +355,8 @@ function App() {
         if (!sourceNode || !targetNode) return;
 
         // 计算连接点的位置
-        const sourceButton = document.querySelector(`[data-node-id="${connection.sourceNodeId}"] [data-port="output"]`);
-        const targetButton = document.querySelector(`[data-node-id="${connection.targetNodeId}"] [data-port="input"]`);
+        const sourceButton = document.querySelector(`[data-node-id="${connection.sourceNodeId}"] [data-property="output"]`);
+        const targetButton = document.querySelector(`[data-node-id="${connection.targetNodeId}"] [data-property="input"]`);
 
         if (!sourceButton || !targetButton) return;
 

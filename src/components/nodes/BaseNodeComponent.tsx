@@ -4,6 +4,7 @@ import { updateNodePosition, updateNodeSize } from "../../store";
 import { useDispatch } from "react-redux";
 import { EDITOR_CONFIG } from '../../config/editor';
 import React from 'react';
+import { NodePorts } from "./NodePort";
 
 // 添加节流函数
 function throttle<T extends (...args: Parameters<T>) => ReturnType<T>>(
@@ -27,7 +28,7 @@ function throttle<T extends (...args: Parameters<T>) => ReturnType<T>>(
 
 type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
-export interface BaseNodeProps {
+export interface BaseNodeComponentProps {
     node: BaseNodeType;
     selected: boolean;
     resizable?: boolean;
@@ -35,6 +36,8 @@ export interface BaseNodeProps {
     onDragEnd?: () => void;
     onSelect?: (nodeId: string, multiSelect: boolean) => void;
     onPositionChange?: (nodeId: string) => void;
+    onConnectionStart?: (nodeId: string, portId: string, startPos: { x: number; y: number }) => void;
+    onConnectionEnd?: (nodeId: string, portId: string) => void;
     x?: MotionValue<number>;
     y?: MotionValue<number>;
 }
@@ -50,7 +53,7 @@ const resizeHandles: { direction: ResizeDirection; className: string }[] = [
     { direction: 'sw', className: 'bottom-0 left-0 h-2 w-2 cursor-sw-resize' }
 ];
 
-export function BaseNode({
+export function BaseNodeComponent({
     node,
     selected,
     resizable = false,
@@ -58,10 +61,12 @@ export function BaseNode({
     onDragEnd,
     onSelect,
     onPositionChange,
+    onConnectionStart,
+    onConnectionEnd,
     x: externalX,
     y: externalY,
     children
-}: BaseNodeProps & { children: React.ReactNode }) {
+}: BaseNodeComponentProps & { children: React.ReactNode }) {
     const dispatch = useDispatch();
     const x = externalX || useMotionValue(node.position.x);
     const y = externalY || useMotionValue(node.position.y);
@@ -213,7 +218,25 @@ export function BaseNode({
                 {node.name}
             </div>
             <div className="relative flex flex-col w-full h-[calc(100%-2.5rem)]">
+                <div className="relative z-10">
+                    <NodePorts
+                        type='output'
+                        ports={node.outputs}
+                        nodeId={node.id}
+                        onConnectionStart={onConnectionStart}
+                        onConnectionEnd={onConnectionEnd}
+                    />
+                </div>
                 {children}
+                <div className="relative z-10 my-2">
+                    <NodePorts
+                        type='input'
+                        ports={node.inputs}
+                        nodeId={node.id}
+                        onConnectionStart={onConnectionStart}
+                        onConnectionEnd={onConnectionEnd}
+                    />
+                </div>
             </div>
             <div className="absolute inset-0 pointer-events-none">
                 {resizable && resizeHandles.map(({ direction, className }) => (

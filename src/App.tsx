@@ -78,6 +78,7 @@ function App() {
             return [{ id: 'input', name: 'Value', type: 'any' }];
           case NodeType.ROUTER:
             return [
+              { id: 'path', name: 'path', type: 'string' },
               { id: 'input', name: 'Value', type: 'any' }
             ];
           default:
@@ -89,6 +90,8 @@ function App() {
         switch (type) {
           case NodeType.TEXT:
             return [{ id: 'output', name: 'Value', type: 'string' }];
+          case NodeType.ROUTER:
+            return [{ id: 'output', name: 'Response', type: 'response' }];
           default:
             return [];
         }

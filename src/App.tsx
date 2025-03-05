@@ -203,7 +203,7 @@ function App() {
       if (existingConnection) {
         dispatch(deleteConnection(existingConnection.id));
         const sourceButton = document.querySelector(
-          `[data-node-id="${existingConnection.sourceNodeId}"] [data-property="output"]`
+          `[data-node-id="${existingConnection.sourceNodeId}"][data-property-id="${existingConnection.sourceOutputId}"]`
         );
         if (!sourceButton) return;
 
@@ -224,7 +224,7 @@ function App() {
     }
 
     // 处理从输出端口开始拖动的情况
-    const sourceButton = document.querySelector(`[data-node-id="${nodeId}"] [data-property="${outputId}"]`);
+    const sourceButton = document.querySelector(`[data-node-id="${nodeId}"][data-property-id="${outputId}"]`);
     if (!sourceButton) return;
 
     const sourceRect = sourceButton.getBoundingClientRect();
@@ -334,7 +334,7 @@ function App() {
   }, [draggingConnection, handleConnectionStart, dispatch, connections]);
 
   // 添加一个新的处理函数来处理画布上的指针事件
-  const handleCanvasPointerUp = useCallback((e: React.PointerEvent) => {
+  const handleCanvasPointerUp = useCallback((_e: React.PointerEvent) => {
     if (draggingConnection) {
       console.log('App - Canvas pointer up, clearing connection');
       setDraggingConnection(null);
@@ -355,8 +355,8 @@ function App() {
         if (!sourceNode || !targetNode) return;
 
         // 计算连接点的位置
-        const sourceButton = document.querySelector(`[data-node-id="${connection.sourceNodeId}"] [data-property="output"]`);
-        const targetButton = document.querySelector(`[data-node-id="${connection.targetNodeId}"] [data-property="input"]`);
+        const sourceButton = document.querySelector(`[data-node-id="${connection.sourceNodeId}"][data-property-id="${connection.sourceOutputId}"]`);
+        const targetButton = document.querySelector(`[data-node-id="${connection.targetNodeId}"][data-property-id="${connection.targetInputId}"]`);
 
         if (!sourceButton || !targetButton) return;
 
@@ -377,7 +377,6 @@ function App() {
         const endY = targetRect.top + targetRect.height / 2 - canvasRect.top + scrollTop;
 
         const dx = endX - startX;
-        const dy = endY - startY;
         const midX = startX + dx * 0.5;
 
         const path = `M ${startX} ${startY} 

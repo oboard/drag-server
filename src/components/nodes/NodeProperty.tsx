@@ -71,16 +71,16 @@ export function NodePropertyComponent({ property, type, nodeId, onConnectionStar
                         onPointerLeave={() => setIsHovering(false)}
                         data-hovering={isHovering}
                         aria-label={`Connect ${property.type}`}
-                        data-property={property.id}
-                        data-property-type={property.type}
                         data-node-id={nodeId}
+                        data-property-id={property.id}
+                        data-property-type={property.type}
                     />
                     <span>{property.name}</span>
                     {!isConnected && (
                         property.type === 'string' ? (
                             <input
                                 type="text"
-                                className="input input-xs input-bordered w-24"
+                                className="input input-bordered flex-1"
                                 placeholder={property.name}
                                 value={portValue}
                                 onChange={handleValueChange}
@@ -88,7 +88,7 @@ export function NodePropertyComponent({ property, type, nodeId, onConnectionStar
                         ) : property.type === 'number' ? (
                             <input
                                 type="number"
-                                className="input input-xs input-bordered w-24"
+                                className="input input-bordered flex-1"
                                 placeholder={property.name}
                                 value={portValue}
                                 onChange={handleValueChange}
@@ -106,9 +106,9 @@ export function NodePropertyComponent({ property, type, nodeId, onConnectionStar
                         className='bg-primary rounded-full w-4 h-4 hover:bg-secondary transition-colors'
                         onPointerDown={handleConnectionEvent}
                         aria-label={`Connect ${property.type}`}
-                        data-property={property.id}
-                        data-property-type={property.type}
                         data-node-id={nodeId}
+                        data-property-id={property.id}
+                        data-property-type={property.type}
                     />
                 </>
             )}

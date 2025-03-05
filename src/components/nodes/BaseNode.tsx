@@ -218,25 +218,29 @@ export function BaseNodeComponent({
                 {node.name}
             </div>
             <div className="relative flex flex-col w-full h-[calc(100%-2.5rem)]">
-                <div className="relative z-10">
-                    <NodeProperties
-                        type='output'
-                        ports={node.outputs}
-                        nodeId={node.id}
-                        onConnectionStart={onConnectionStart}
-                        onConnectionEnd={onConnectionEnd}
-                    />
-                </div>
+                {node.outputs && node.outputs.length > 0 &&
+                    <div className="relative z-10">
+                        <NodeProperties
+                            type='output'
+                            ports={node.outputs}
+                            nodeId={node.id}
+                            onConnectionStart={onConnectionStart}
+                            onConnectionEnd={onConnectionEnd}
+                        />
+                    </div>
+                }
                 {children}
-                <div className="relative z-10 my-2">
-                    <NodeProperties
-                        type='input'
-                        ports={node.inputs}
-                        nodeId={node.id}
-                        onConnectionStart={onConnectionStart}
-                        onConnectionEnd={onConnectionEnd}
-                    />
-                </div>
+                {node.inputs && node.inputs.length > 0 &&
+                    <div className="relative z-10 my-2">
+                        <NodeProperties
+                            type='input'
+                            ports={node.inputs}
+                            nodeId={node.id}
+                            onConnectionStart={onConnectionStart}
+                            onConnectionEnd={onConnectionEnd}
+                        />
+                    </div>
+                }
             </div>
             <div className="absolute inset-0 pointer-events-none">
                 {resizable && resizeHandles.map(({ direction, className }) => (

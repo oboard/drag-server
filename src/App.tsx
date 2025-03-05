@@ -12,6 +12,7 @@ import { NodeFactory } from './components/NodeFactory';
 import { NodeType, NodeTypeEnum, NodeTypes } from './types/index';
 import { ConnectionLine } from './components/ConnectionLine';
 import { PropertyInfo } from 'types';
+import { CodePreview } from './components/CodePreview';
 
 interface DraggingConnection {
   sourceNodeId: string;
@@ -29,6 +30,7 @@ function App() {
   const [selectionStart, setSelectionStart] = useState({ x: 0, y: 0 });
   const [selectionEnd, setSelectionEnd] = useState({ x: 0, y: 0 });
   const [draggingConnection, setDraggingConnection] = useState<DraggingConnection | null>(null);
+  const [isCodePreviewOpen, setIsCodePreviewOpen] = useState(false);
   const dispatch = useDispatch();
 
   // 处理键盘快捷键
@@ -115,7 +117,7 @@ function App() {
 
       // 创建新节点
       const newNode: NodeTypes = {
-        id: uuidv4(),
+        id: uuidv4().replace(/-/g, ''),
         type: data.type,
         name: data.name,
         position: { x: snappedX, y: snappedY },
@@ -321,7 +323,7 @@ function App() {
                    ${draggingConnection.currentPos.x} ${draggingConnection.currentPos.y}`;
 
     dispatch(addConnection({
-      id: uuidv4(),
+      id: uuidv4().replace(/-/g, ''),
       sourceNodeId: draggingConnection.sourceNodeId,
       sourceOutputId: draggingConnection.sourceOutputId,
       targetNodeId,
@@ -394,8 +396,22 @@ function App() {
   }, [nodes, dispatch]);
 
   return (
-    <div className="flex h-screen bg-base-300">
-      <NodeTypeList />
+    <div className="flex h-screen">
+      {/* 左侧节点列表 */}
+      <div className="w-64 border-r border-r-base-300 overflow-y-auto">
+        <NodeTypeList />
+
+        <div className="mt-4 p-4">
+          <h2 className="text-xl font-bold mb-4">操作</h2>
+          <button
+            type="button"
+            className="btn btn-primary w-full mb-2"
+            onClick={() => setIsCodePreviewOpen(true)}
+          >
+            运行 & 预览代码
+          </button>
+        </div>
+      </div>
 
       {/* 右侧画布 */}
       <div
@@ -468,6 +484,12 @@ function App() {
           />
         )}
       </div>
+
+      {/* 代码预览模态框 */}
+      <CodePreview
+        isOpen={isCodePreviewOpen}
+        onClose={() => setIsCodePreviewOpen(false)}
+      />
     </div>
   );
 }

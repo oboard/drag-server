@@ -42,6 +42,10 @@ export interface RouterNode extends BaseNode {
     type: typeof NodeType.ROUTER;
 }
 
+export interface PortNode extends BaseNode {
+    type: typeof NodeType.PORT;
+}
+
 export interface Connection {
     id: string;
     sourceNodeId: string;
@@ -51,7 +55,7 @@ export interface Connection {
     path: string;
 }
 
-export type NodeTypes = TextNode | LogNode | RouterNode;
+export type NodeTypes = TextNode | LogNode | RouterNode | PortNode;
 
 // 类型守卫函数
 export const isTextNode = (node: NodeTypes | undefined): node is TextNode => {
@@ -64,4 +68,8 @@ export const isLogNode = (node: NodeTypes | undefined): node is LogNode => {
 
 export const isRouterNode = (node: NodeTypes | undefined): node is RouterNode => {
     return node?.type === NodeType.ROUTER;
+};
+
+export const isPortNode = (node: NodeTypes | undefined): node is PortNode => {
+    return node?.type === NodeType.PORT;
 }; 

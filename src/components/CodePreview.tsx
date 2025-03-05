@@ -1,7 +1,6 @@
-import React from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { NodeType, NodeTypes, Connection } from '../types/index';
+import { NodeType } from '../types/index';
 import { PropertyInfo } from 'types';
 
 interface CodePreviewProps {

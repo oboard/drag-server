@@ -1,5 +1,5 @@
 import React from 'react';
-import { PropertyInfo } from 'types';
+import { PropertyInfo } from '../../types/index';
 import clsx from 'clsx';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';

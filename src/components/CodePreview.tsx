@@ -1,7 +1,6 @@
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { NodeType } from '../types/index';
-import { PropertyInfo } from 'types';
+import { NodeTypeEnum, PropertyInfo } from '../types/index';
 
 interface CodePreviewProps {
     isOpen: boolean;
@@ -16,7 +15,7 @@ export function CodePreview({ isOpen, onClose }: CodePreviewProps) {
     // 生成代码
     const generateCode = (): string => {
         // 文本节点函数
-        const textNodes = nodes.filter(node => node.type === NodeType.TEXT);
+        const textNodes = nodes.filter(node => node.type === NodeTypeEnum.TEXT);
         const textNodesFunctions = textNodes.map(node => `
 function text_${node.id}() {
   return \`${node.content}\`;
@@ -24,7 +23,7 @@ function text_${node.id}() {
 `).join('');
 
         // 日志节点函数
-        const logNodes = nodes.filter(node => node.type === NodeType.LOG);
+        const logNodes = nodes.filter(node => node.type === NodeTypeEnum.LOG);
         const logNodesFunctions = logNodes.map(node => `
 function log_${node.id}(value) {
   console.log(value);
@@ -33,7 +32,7 @@ function log_${node.id}(value) {
 `).join('');
 
         // 路由节点函数
-        const routerNodes = nodes.filter(node => node.type === NodeType.ROUTER);
+        const routerNodes = nodes.filter(node => node.type === NodeTypeEnum.ROUTER);
         let routesDeclaration = '';
         let routerNodesFunctions = '';
 
@@ -61,7 +60,7 @@ function router_${node.id}(value) {
         }
 
         // 端口节点函数
-        const portNodes = nodes.filter(node => node.type === NodeType.PORT);
+        const portNodes = nodes.filter(node => node.type === NodeTypeEnum.PORT);
         const portNodesFunctions = portNodes.map(node => {
             const portProperty = node.inputs.find((input: PropertyInfo) => input.id === 'port');
             let defaultPort = 3000;
@@ -135,7 +134,7 @@ function port_${node.id}(value, port = ${defaultPort}) {
 
             // 根据节点类型生成初始调用
             switch (startNode.type) {
-                case NodeType.TEXT:
+                case NodeTypeEnum.TEXT:
                     callChain = `text_${startNode.id}()`;
                     break;
                 default:
@@ -158,13 +157,13 @@ function port_${node.id}(value, port = ${defaultPort}) {
 
                     let nextCall = '';
                     switch (nextNode.type) {
-                        case NodeType.LOG:
+                        case NodeTypeEnum.LOG:
                             nextCall = `log_${nextNodeId}(${result})`;
                             break;
-                        case NodeType.ROUTER:
+                        case NodeTypeEnum.ROUTER:
                             nextCall = `router_${nextNodeId}(${result})`;
                             break;
-                        case NodeType.PORT: {
+                        case NodeTypeEnum.PORT: {
                             // 检查是否有连接到端口输入的节点
                             const portInputs = nodeInputs.get(nextNodeId);
                             const portInput = portInputs?.get('port');
@@ -173,7 +172,7 @@ function port_${node.id}(value, port = ${defaultPort}) {
                             if (portInput) {
                                 const [sourceNodeId] = portInput.split(':');
                                 const sourceNode = nodes.find(n => n.id === sourceNodeId);
-                                if (sourceNode?.type === NodeType.TEXT) {
+                                if (sourceNode?.type === NodeTypeEnum.TEXT) {
                                     const portFromText = Number(sourceNode.content.trim());
                                     if (!Number.isNaN(portFromText)) {
                                         portValue = `, ${portFromText}`;
@@ -182,6 +181,10 @@ function port_${node.id}(value, port = ${defaultPort}) {
                             }
 
                             nextCall = `port_${nextNodeId}(${result}${portValue})`;
+                            break;
+                        }
+                        case NodeTypeEnum.JSON: {
+                            nextCall = `json_${nextNodeId}(${result})`;
                             break;
                         }
                         default:

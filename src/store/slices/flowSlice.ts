@@ -73,10 +73,10 @@ export const flowSlice = createSlice({
         connection.path = action.payload.path;
       }
     },
-    updatePortValue: (state, action: PayloadAction<{ 
-      nodeId: string; 
-      portId: string; 
-      value: string | number 
+    updatePortValue: (state, action: PayloadAction<{
+      nodeId: string;
+      portId: string;
+      value: string | number
     }>) => {
       const { nodeId, portId, value } = action.payload;
       if (!state.properties[nodeId]) {

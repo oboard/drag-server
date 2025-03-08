@@ -1,33 +1,36 @@
+import { NodeTypeEnum } from '../types/index';
 import { NodeTypeListItem, NodeTypeListItemProps } from './NodeTypeListItem';
 
-const nodeTypes = [
+export const nodeTypes = [
     {
-        id: "text",
-        type: "text",
+        type: NodeTypeEnum.TEXT,
         name: "文本",
-        icon: "📝",
-        description: "文本输入节点"
+        icon: "📄",
+        description: "文本节点"
     },
     {
-        id: "logger",
-        type: "log",
+        type: NodeTypeEnum.LOG,
         name: "日志",
         icon: "📝",
         description: "日志输出节点"
     },
     {
-        id: "router",
-        type: "router",
+        type: NodeTypeEnum.ROUTER,
         name: "路由",
         icon: "🔄",
         description: "路由节点"
     },
     {
-        id: "port",
-        type: "port",
+        type: NodeTypeEnum.PORT,
         name: "端口",
         icon: "🔌",
         description: "端口节点"
+    },
+    {
+        type: NodeTypeEnum.JSON,
+        name: "JSON",
+        icon: "🔍",
+        description: "JSON 数据节点"
     }
 ] as NodeTypeListItemProps[];
 
@@ -38,7 +41,7 @@ export function NodeTypeList() {
             <div className="space-y-2">
                 {nodeTypes.map(nodeType => (
                     <NodeTypeListItem
-                        key={nodeType.id}
+                        key={nodeType.type}
                         {...nodeType}
                     />
                 ))}

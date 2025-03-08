@@ -1,13 +1,31 @@
-import { PropertyInfo } from "types";
+// 节点类型枚举
+export enum NodeTypeEnum {
+    TEXT = 'TEXT',
+    JSON = 'JSON',
+    LOG = 'LOG',
+    ROUTER = 'ROUTER',
+    PORT = 'PORT'
+}
 
-export const NodeType = {
-    TEXT: 'text',
-    LOG: 'log',
-    ROUTER: 'router',
-    PORT: 'port',
-} as const;
+// 节点端口类型
+export interface PropertyInfo {
+    id: string;
+    name: string;
+    type: 'string' | 'response' | 'number' | 'any' | 'json';
+}
 
-export type NodeTypeEnum = typeof NodeType[keyof typeof NodeType];
+// 节点配置
+export interface NodeConfig {
+    inputs: PropertyInfo[];
+    outputs: PropertyInfo[];
+    icon: string;
+    description: string;
+}
+
+// 节点配置映射
+export type NodeConfigMap = {
+    [key in NodeTypeEnum]: NodeConfig;
+}
 
 export interface Position {
     x: number;
@@ -19,6 +37,7 @@ export interface Size {
     height: number;
 }
 
+// 基础节点信息
 export interface BaseNode {
     id: string;
     type: NodeTypeEnum;
@@ -30,22 +49,34 @@ export interface BaseNode {
     outputs: PropertyInfo[];
 }
 
+// 节点描述信息
+export interface NodeInfo extends Omit<BaseNode, 'inputs' | 'outputs' | 'content' | 'size'> {
+    icon: string;
+    description: string;
+}
+
+// 具体节点类型
 export interface TextNode extends BaseNode {
-    type: typeof NodeType.TEXT;
+    type: NodeTypeEnum.TEXT;
 }
 
 export interface LogNode extends BaseNode {
-    type: typeof NodeType.LOG;
+    type: NodeTypeEnum.LOG;
 }
 
 export interface RouterNode extends BaseNode {
-    type: typeof NodeType.ROUTER;
+    type: NodeTypeEnum.ROUTER;
 }
 
 export interface PortNode extends BaseNode {
-    type: typeof NodeType.PORT;
+    type: NodeTypeEnum.PORT;
 }
 
+export interface JsonNode extends BaseNode {
+    type: NodeTypeEnum.JSON;
+}
+
+// 连接
 export interface Connection {
     id: string;
     sourceNodeId: string;
@@ -55,21 +86,4 @@ export interface Connection {
     path: string;
 }
 
-export type NodeTypes = TextNode | LogNode | RouterNode | PortNode;
-
-// 类型守卫函数
-export const isTextNode = (node: NodeTypes | undefined): node is TextNode => {
-    return node?.type === NodeType.TEXT;
-};
-
-export const isLogNode = (node: NodeTypes | undefined): node is LogNode => {
-    return node?.type === NodeType.LOG;
-};
-
-export const isRouterNode = (node: NodeTypes | undefined): node is RouterNode => {
-    return node?.type === NodeType.ROUTER;
-};
-
-export const isPortNode = (node: NodeTypes | undefined): node is PortNode => {
-    return node?.type === NodeType.PORT;
-}; 
+export type NodeTypes = TextNode | LogNode | RouterNode | PortNode | JsonNode;

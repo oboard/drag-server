@@ -9,10 +9,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { EDITOR_CONFIG } from './config/editor';
 import "./App.css";
 import { NodeFactory } from './components/NodeFactory';
-import { NodeType, NodeTypeEnum, NodeTypes } from './types/index';
+import { NodeTypeEnum, NodeTypes, PropertyInfo } from './types/index';
 import { ConnectionLine } from './components/ConnectionLine';
-import { PropertyInfo } from 'types';
 import { CodePreview } from './components/CodePreview';
+import { NODE_CONFIGS } from './configs/nodeConfigs';
 
 interface DraggingConnection {
   sourceNodeId: string;
@@ -75,33 +75,11 @@ function App() {
       const snappedX = Math.round(x / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
       const snappedY = Math.round(y / EDITOR_CONFIG.grid.size) * EDITOR_CONFIG.grid.size;
       const getInputs = (type: NodeTypeEnum): PropertyInfo[] => {
-        switch (type) {
-          case NodeType.LOG:
-            return [{ id: 'input', name: 'Value', type: 'any' }];
-          case NodeType.ROUTER:
-            return [
-              { id: 'path', name: 'Path', type: 'string' },
-              { id: 'input', name: 'Value', type: 'any' }
-            ];
-          case NodeType.PORT:
-            return [
-              { id: 'port', name: 'Port', type: 'number' },
-              { id: 'input', name: 'Value', type: 'any' }
-            ];
-          default:
-            return [];
-        }
+        return NODE_CONFIGS[type]?.inputs || [];
       };
 
       const getOutputs = (type: NodeTypeEnum): PropertyInfo[] => {
-        switch (type) {
-          case NodeType.TEXT:
-            return [{ id: 'output', name: 'Value', type: 'string' }];
-          case NodeType.ROUTER:
-            return [{ id: 'output', name: 'Response', type: 'response' }];
-          default:
-            return [];
-        }
+        return NODE_CONFIGS[type]?.outputs || [];
       };
 
       const getHeight = (type: NodeTypeEnum): number => {

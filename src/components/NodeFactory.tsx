@@ -1,5 +1,6 @@
-import { NodeTypes, NodeType } from '../types/index';
+import { NodeTypeEnum, NodeTypes } from '../types/index';
 import { BaseNodeComponent } from './nodes/BaseNode';
+import { JsonNodeComponent } from './nodes/JsonNode';
 import { LogNodeComponent } from './nodes/LogNode';
 import { TextNodeComponent } from './nodes/TextNode';
 
@@ -18,11 +19,12 @@ export function NodeFactory(props: NodeFactoryProps) {
     const { node } = props;
 
     switch (node.type) {
-        case NodeType.TEXT:
+        case NodeTypeEnum.TEXT:
             return <TextNodeComponent {...props} node={node} />;
-        case NodeType.LOG:
+        case NodeTypeEnum.LOG:
             return <LogNodeComponent {...props} node={node} />;
-
+        case NodeTypeEnum.JSON:
+            return <JsonNodeComponent {...props} node={node} />;
         default:
             return <BaseNodeComponent {...props} node={node} />;
     }

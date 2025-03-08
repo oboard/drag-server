@@ -1,18 +1,16 @@
 import { NodeTypeEnum } from "types/index";
 
 export interface NodeTypeListItemProps {
-    id: string;
     type: NodeTypeEnum;
     name: string;
     icon: string;
     description: string;
 }
 
-export function NodeTypeListItem({ id, type, name, icon, description }: NodeTypeListItemProps) {
+export function NodeTypeListItem({ type, name, icon, description }: NodeTypeListItemProps) {
     const handleDragStart = (e: React.DragEvent) => {
         // 设置拖拽数据
         e.dataTransfer.setData('application/json', JSON.stringify({
-            id,
             type,
             name,
             icon,

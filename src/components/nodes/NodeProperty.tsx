@@ -44,6 +44,55 @@ export function NodePropertyComponent({ property, type, nodeId, onConnectionStar
         dispatch(updatePortValue({ nodeId, portId: property.id, value }));
     };
 
+    // 渲染连接按钮
+    const renderConnectionButton = (isInput: boolean) => (
+        <button
+            ref={buttonRef}
+            type='button'
+            className={clsx('rounded-full w-4 h-4 transition-colors', getTypeBackgroundColor(property.type))}
+            onPointerUp={isInput ? handleConnectionEvent : undefined}
+            onPointerDown={handleConnectionEvent}
+            onPointerEnter={isInput ? () => setIsHovering(true) : undefined}
+            onPointerLeave={isInput ? () => setIsHovering(false) : undefined}
+            data-hovering={isInput ? isHovering : undefined}
+            aria-label={`Connect ${property.type}`}
+            data-node-id={nodeId}
+            data-property-id={property.id}
+            data-property-type={property.type}
+        />
+    );
+
+    // 渲染输入框
+    const renderInputField = () => {
+        if (isConnected) return null;
+
+        if (property.type === 'string') {
+            return (
+                <input
+                    type="text"
+                    className="input input-bordered flex-1"
+                    placeholder={property.name}
+                    value={portValue}
+                    onChange={handleValueChange}
+                />
+            );
+        }
+
+        if (property.type === 'number') {
+            return (
+                <input
+                    type="number"
+                    className="input input-bordered flex-1"
+                    placeholder={property.name}
+                    value={portValue}
+                    onChange={handleValueChange}
+                />
+            );
+        }
+
+        return null;
+    };
+
     return (
         <div className={clsx(["flex items-center gap-2"], {
             "justify-end": type === 'output',
@@ -51,55 +100,15 @@ export function NodePropertyComponent({ property, type, nodeId, onConnectionStar
         })}>
             {type === 'input' && (
                 <>
-                    <button
-                        ref={buttonRef}
-                        type='button'
-                        className={clsx('rounded-full w-4 h-4 transition-colors', getTypeBackgroundColor(property.type))}
-                        onPointerUp={handleConnectionEvent}
-                        onPointerDown={handleConnectionEvent}
-                        onPointerEnter={() => setIsHovering(true)}
-                        onPointerLeave={() => setIsHovering(false)}
-                        data-hovering={isHovering}
-                        aria-label={`Connect ${property.type}`}
-                        data-node-id={nodeId}
-                        data-property-id={property.id}
-                        data-property-type={property.type}
-                    />
+                    {renderConnectionButton(true)}
                     <span>{property.name}</span>
-                    {!isConnected && (
-                        property.type === 'string' ? (
-                            <input
-                                type="text"
-                                className="input input-bordered flex-1"
-                                placeholder={property.name}
-                                value={portValue}
-                                onChange={handleValueChange}
-                            />
-                        ) : property.type === 'number' ? (
-                            <input
-                                type="number"
-                                className="input input-bordered flex-1"
-                                placeholder={property.name}
-                                value={portValue}
-                                onChange={handleValueChange}
-                            />
-                        ) : null
-                    )}
+                    {renderInputField()}
                 </>
             )}
             {type === 'output' && (
                 <>
                     <span>{property.name}</span>
-                    <button
-                        ref={buttonRef}
-                        type='button'
-                        className={clsx('rounded-full w-4 h-4 transition-colors', getTypeBackgroundColor(property.type))}
-                        onPointerDown={handleConnectionEvent}
-                        aria-label={`Connect ${property.type}`}
-                        data-node-id={nodeId}
-                        data-property-id={property.id}
-                        data-property-type={property.type}
-                    />
+                    {renderConnectionButton(false)}
                 </>
             )}
         </div>

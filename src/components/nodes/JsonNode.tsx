@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { EditorView, keymap } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { json } from '@codemirror/lang-json';
-import { oneDark } from '@codemirror/theme-one-dark';
+import { githubLight, githubDark } from '@uiw/codemirror-theme-github';
 import { ViewUpdate } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { syntaxHighlighting, defaultHighlightStyle, bracketMatching } from '@codemirror/language';
@@ -19,6 +19,7 @@ export function JsonNodeComponent(props: BaseNodeComponentProps) {
     const [editorView, setEditorView] = useState<EditorView | null>(null);
     const [isValidJson, setIsValidJson] = useState(true);
     const [jsonSize, setJsonSize] = useState({ keys: 0, size: 0 });
+    const [isDarkMode, setIsDarkMode] = useState(window.matchMedia('(prefers-color-scheme: dark)').matches);
 
     // 添加事件处理函数来阻止删除快捷键
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -26,6 +27,65 @@ export function JsonNodeComponent(props: BaseNodeComponentProps) {
             e.stopPropagation();
         }
     };
+
+    // 监听系统颜色模式变化
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = (e: MediaQueryListEvent) => {
+            setIsDarkMode(e.matches);
+        };
+        
+        mediaQuery.addEventListener('change', handleChange);
+        return () => {
+            mediaQuery.removeEventListener('change', handleChange);
+        };
+    }, []);
+
+    // 当暗黑模式状态变化时更新编辑器主题
+    useEffect(() => {
+        if (editorView) {
+            // 重新创建编辑器状态以应用新主题
+            const newState = EditorState.create({
+                doc: editorView.state.doc,
+                extensions: [
+                    history(),
+                    syntaxHighlighting(defaultHighlightStyle),
+                    bracketMatching(),
+                    closeBrackets(),
+                    keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
+                    json(),
+                    isDarkMode ? githubDark : githubLight,
+                    EditorView.theme({
+                        "&": { height: "100%", width: "100%" },
+                        ".cm-editor": { height: "100%", width: "100%" },
+                        ".cm-scroller": { height: "100%", overflow: "auto" },
+                        ".cm-content": { height: "100%", minHeight: "100px" }
+                    }),
+                    EditorState.tabSize.of(2),
+                    EditorView.lineWrapping,
+                    EditorView.updateListener.of((update: ViewUpdate) => {
+                        if (update.docChanged) {
+                            const newContent = update.state.doc.toString();
+                            dispatch(updateNodeContent({ id: props.node.id, content: newContent }));
+
+                            try {
+                                const parsed = JSON.parse(newContent);
+                                setIsValidJson(true);
+                                setJsonSize({
+                                    keys: countKeys(parsed),
+                                    size: new TextEncoder().encode(newContent).length
+                                });
+                            } catch (e) {
+                                setIsValidJson(false);
+                            }
+                        }
+                    })
+                ]
+            });
+            
+            editorView.setState(newState);
+        }
+    }, [isDarkMode, editorView, dispatch, props.node.id]);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
     useEffect(() => {
@@ -61,7 +121,7 @@ export function JsonNodeComponent(props: BaseNodeComponentProps) {
                 closeBrackets(),
                 keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
                 json(),
-                oneDark,
+                isDarkMode ? githubDark : githubLight,
                 theme,
                 EditorState.tabSize.of(2),
                 EditorView.lineWrapping,

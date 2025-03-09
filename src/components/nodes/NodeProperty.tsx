@@ -31,7 +31,7 @@ export function NodePropertyComponent({ property, type, nodeId, onConnectionStar
         );
     }, [connections, nodeId, property.id, type]);
 
-    const handleConnectionEvent = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const handleConnectionEvent = (_e: React.PointerEvent<HTMLButtonElement>) => {
         if (type === 'output') {
             onConnectionStart?.(nodeId, property.id, property.type);
         } else {

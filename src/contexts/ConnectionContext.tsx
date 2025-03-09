@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
 interface ConnectionContextType {
-    registerPort: (portId: string, type: 'input' | 'output', element: HTMLElement) => void;
+    registerPort: (portId: string, element: HTMLElement) => void;
     unregisterPort: (portId: string) => void;
     getPortElement: (portId: string) => HTMLElement | null;
     setHoveredInputPort: (portId: string | null) => void;
@@ -14,7 +14,7 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
     const [ports, setPorts] = useState<Map<string, HTMLElement>>(new Map());
     const [hoveredInputPort, setHoveredInputPort] = useState<string | null>(null);
 
-    const registerPort = useCallback((portId: string, type: 'input' | 'output', element: HTMLElement) => {
+    const registerPort = useCallback((portId: string, element: HTMLElement) => {
         setPorts(prev => {
             const next = new Map(prev);
             next.set(portId, element);

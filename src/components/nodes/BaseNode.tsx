@@ -1,5 +1,5 @@
 import { motion, useMotionTemplate, useMotionValue, animate, useDragControls, MotionValue } from "framer-motion";
-import { BaseNode as BaseNodeType } from "../../types/index";
+import { BaseNode as BaseNodeType, PropertyType } from "../../types/index";
 import { updateNodePosition, updateNodeSize } from "../../store";
 import { useDispatch } from "react-redux";
 import { EDITOR_CONFIG } from '../../config/editor';
@@ -36,8 +36,8 @@ export interface BaseNodeComponentProps {
     onDragEnd?: () => void;
     onSelect?: (nodeId: string, multiSelect: boolean) => void;
     onPositionChange?: (nodeId: string) => void;
-    onConnectionStart?: (nodeId: string, portId: string, startPos: { x: number; y: number }) => void;
-    onConnectionEnd?: (nodeId: string, portId: string) => void;
+    onConnectionStart?: (nodeId: string, portId: string, type: PropertyType) => void;
+    onConnectionEnd?: (nodeId: string, portId: string, type: PropertyType) => void;
     x?: MotionValue<number>;
     y?: MotionValue<number>;
 }
@@ -213,7 +213,7 @@ export function BaseNodeComponent({
         >
             <div
                 onPointerDown={(e) => dragControls.start(e)}
-                className="h-10 bg-base-200 rounded-t-lg flex items-center justify-center"
+                className="p-1 bg-base-200 rounded-t-lg flex items-center justify-center"
             >
                 {node.name}
             </div>

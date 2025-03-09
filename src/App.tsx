@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { EDITOR_CONFIG } from './config/editor';
 import "./App.css";
 import { NodeFactory } from './components/NodeFactory';
-import { NodeTypeEnum, NodeTypes, PropertyInfo } from './types/index';
+import { NodeTypeEnum, NodeTypes, PropertyInfo, PropertyType } from './types/index';
 import { ConnectionLine } from './components/ConnectionLine';
 import { CodePreview } from './components/CodePreview';
 import { NODE_CONFIGS } from './configs/nodeConfigs';
@@ -19,6 +19,7 @@ interface DraggingConnection {
   sourceOutputId: string;
   startPos: { x: number; y: number };
   currentPos: { x: number; y: number };
+  type: PropertyType;
 }
 
 function App() {
@@ -164,7 +165,7 @@ function App() {
     setIsSelecting(false);
   }, []);
 
-  const handleConnectionStart = useCallback((nodeId: string, outputId: string) => {
+  const handleConnectionStart = useCallback((nodeId: string, outputId: string, type: PropertyType) => {
     console.log('App - handleConnectionStart', { nodeId, outputId });
 
     // 获取画布和滚动位置
@@ -197,7 +198,8 @@ function App() {
           sourceNodeId: existingConnection.sourceNodeId,
           sourceOutputId: existingConnection.sourceOutputId,
           startPos,
-          currentPos: { ...startPos }
+          currentPos: { ...startPos },
+          type: existingConnection.type
         });
         return;
       }
@@ -217,7 +219,8 @@ function App() {
       sourceNodeId: nodeId,
       sourceOutputId: outputId,
       startPos,
-      currentPos: { ...startPos }
+      currentPos: { ...startPos },
+      type: type
     });
   }, [connections, dispatch]);
 
@@ -274,7 +277,7 @@ function App() {
       if (existingConnection) {
         // 如果已经有连接，先删除它
         dispatch(deleteConnection(existingConnection.id));
-        handleConnectionStart(existingConnection.sourceNodeId, existingConnection.sourceOutputId);
+        handleConnectionStart(existingConnection.sourceNodeId, existingConnection.sourceOutputId, existingConnection.type);
       }
       return;
     }
@@ -306,7 +309,8 @@ function App() {
       sourceOutputId: draggingConnection.sourceOutputId,
       targetNodeId,
       targetInputId,
-      path
+      path,
+      type: draggingConnection.type
     }));
     console.log('App - Connection added');
 
@@ -410,7 +414,7 @@ function App() {
 
         {/* 连线 */}
         {connections.map(connection => (
-          <ConnectionLine key={connection.id} connection={connection} />
+          <ConnectionLine key={connection.id} connection={connection} propertyType={connection.type} />
         ))}
         {draggingConnection && (
           <ConnectionLine
@@ -420,11 +424,13 @@ function App() {
               sourceOutputId: draggingConnection.sourceOutputId,
               targetNodeId: '',
               targetInputId: '',
-              path: ''
+              path: '',
+              type: draggingConnection.type
             }}
             isPreview={true}
             previewStart={draggingConnection.startPos}
             previewEnd={draggingConnection.currentPos}
+            propertyType={draggingConnection.type}
           />
         )}
 

@@ -30,4 +30,17 @@ export default defineConfig(async () => ({
       ignored: ["**/src-tauri/**"],
     },
   },
+
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'ui-vendor': ['@headlessui/react', 'daisyui'],
+          'redux-vendor': ['react-redux', '@reduxjs/toolkit'],
+        }
+      }
+    },
+    chunkSizeWarningLimit: 500,
+  }
 }));

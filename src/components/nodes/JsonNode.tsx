@@ -124,7 +124,7 @@ export function JsonNodeComponent(props: BaseNodeComponentProps) {
     return (
         <BaseNodeComponent resizable={true} {...props}>
             <div className='w-full h-full p-2 flex flex-col'>
-                <div ref={editorRef} className="w-full h-full min-h-[200px] overflow-hidden rounded-lg border border-base-300" />
+                <div ref={editorRef} className="w-full h-full overflow-hidden rounded-lg border border-base-300" />
                 <div className="flex justify-between text-sm text-base-content/50 mt-1">
                     <div className={isValidJson ? "text-success" : "text-error"}>
                         {isValidJson ? "有效的 JSON" : "无效的 JSON"}

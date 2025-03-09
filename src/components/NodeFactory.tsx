@@ -1,4 +1,4 @@
-import { NodeTypeEnum, NodeTypes } from '../types/index';
+import { NodeTypeEnum, NodeTypes, PropertyType } from '../types/index';
 import { BaseNodeComponent } from './nodes/BaseNode';
 import { JsonNodeComponent } from './nodes/JsonNode';
 import { LogNodeComponent } from './nodes/LogNode';
@@ -10,8 +10,8 @@ export interface NodeFactoryProps {
     onSelect: (nodeId: string, multiSelect: boolean) => void;
     onDragStart?: () => void;
     onDragEnd?: () => void;
-    onConnectionStart?: (nodeId: string, portId: string, startPos: { x: number; y: number }) => void;
-    onConnectionEnd?: (nodeId: string, portId: string) => void;
+    onConnectionStart?: (nodeId: string, portId: string, type: PropertyType) => void;
+    onConnectionEnd?: (nodeId: string, portId: string, type: PropertyType) => void;
     onPositionChange?: (nodeId: string) => void;
 }
 

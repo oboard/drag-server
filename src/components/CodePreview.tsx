@@ -31,6 +31,14 @@ function log_${node.id}(value) {
 }
 `).join('');
 
+        // JSON 节点函数
+        const jsonNodes = nodes.filter(node => node.type === NodeTypeEnum.JSON);
+        const jsonNodesFunctions = jsonNodes.map(node => `
+function json_${node.id}() {
+  return ${node.content || '{}'};
+}
+`).join('');
+
         // 路由节点函数
         const routerNodes = nodes.filter(node => node.type === NodeTypeEnum.ROUTER);
         let routesDeclaration = '';
@@ -45,13 +53,16 @@ const routes = new Map();
 
             routerNodesFunctions = routerNodes.map(node => {
                 const pathProperty = node.inputs.find((input: PropertyInfo) => input.id === 'path');
-                const pathValue = properties[node.id]?.[pathProperty?.id || ''] || '/';
+                const defaultPath = properties[node.id]?.[pathProperty?.id || ''] || '/';
 
                 return `
-function router_${node.id}(value) {
-  routes.set('${pathValue}', (req, res) => {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(value));
+function router_${node.id}(props) {
+  const path = props.path || '${defaultPath}';
+  const value = props.value;
+  routes.set(path, (req, res) => {
+    const contentType = typeof value === 'string' ? 'text/plain' : 'application/json';
+    res.writeHead(200, { 'Content-Type': contentType });
+    res.end(typeof value === 'string' ? value : JSON.stringify(value));
   });
   return value;
 }
@@ -137,6 +148,9 @@ function port_${node.id}(value, port = ${defaultPort}) {
                 case NodeTypeEnum.TEXT:
                     callChain = `text_${startNode.id}()`;
                     break;
+                case NodeTypeEnum.JSON:
+                    callChain = `json_${startNode.id}()`;
+                    break;
                 default:
                     return; // 跳过不支持作为起始节点的类型
             }
@@ -160,9 +174,44 @@ function port_${node.id}(value, port = ${defaultPort}) {
                         case NodeTypeEnum.LOG:
                             nextCall = `log_${nextNodeId}(${result})`;
                             break;
-                        case NodeTypeEnum.ROUTER:
-                            nextCall = `router_${nextNodeId}(${result})`;
+                        case NodeTypeEnum.ROUTER: {
+                            // 获取节点的所有输入连接
+                            const nodeInputsMap = nodeInputs.get(nextNodeId);
+                            const props: Record<string, string> = {};
+                            
+                            // 处理每个输入端口的连接
+                            if (nodeInputsMap) {
+                                for (const [inputId, sourceConnection] of nodeInputsMap.entries()) {
+                                    if (sourceConnection) {
+                                        const [sourceNodeId] = sourceConnection.split(':');
+                                        const sourceNode = nodes.find(n => n.id === sourceNodeId);
+                                        if (sourceNode) {
+                                            if (inputId === 'path') {
+                                                // 如果是路径输入，使用文本节点的内容
+                                                if (sourceNode.type === NodeTypeEnum.TEXT) {
+                                                    props[inputId] = `"${sourceNode.content}"`;
+                                                }
+                                            } else if (inputId === 'value') {
+                                                // 如果是值输入，使用上一个节点的结果
+                                                props[inputId] = result;
+                                            }
+                                        }
+                                    } else if (inputId === 'path') {
+                                        // 如果没有连接，使用属性面板中的值
+                                        const pathValue = properties[nextNodeId]?.path || '/';
+                                        props[inputId] = `"${pathValue}"`;
+                                    }
+                                }
+                            }
+
+                            // 构建属性对象字符串
+                            const propsString = Object.entries(props)
+                                .map(([key, value]) => `"${key}": ${value}`)
+                                .join(', ');
+
+                            nextCall = `router_${nextNodeId}({ ${propsString} })`;
                             break;
+                        }
                         case NodeTypeEnum.PORT: {
                             // 检查是否有连接到端口输入的节点
                             const portInputs = nodeInputs.get(nextNodeId);
@@ -208,7 +257,7 @@ const http = require('http');
 const url = require('url');
 
 // 节点函数定义
-${textNodesFunctions}${logNodesFunctions}${routesDeclaration}${routerNodesFunctions}${portNodesFunctions}
+${textNodesFunctions}${logNodesFunctions}${jsonNodesFunctions}${routesDeclaration}${routerNodesFunctions}${portNodesFunctions}
 // 连接调用
 ${callChains.join('\n')}
 `;

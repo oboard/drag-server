@@ -55,26 +55,7 @@ export interface NodeInfo extends Omit<BaseNode, 'inputs' | 'outputs' | 'content
     description: string;
 }
 
-// 具体节点类型
-export interface TextNode extends BaseNode {
-    type: NodeTypeEnum.TEXT;
-}
-
-export interface LogNode extends BaseNode {
-    type: NodeTypeEnum.LOG;
-}
-
-export interface RouterNode extends BaseNode {
-    type: NodeTypeEnum.ROUTER;
-}
-
-export interface PortNode extends BaseNode {
-    type: NodeTypeEnum.PORT;
-}
-
-export interface JsonNode extends BaseNode {
-    type: NodeTypeEnum.JSON;
-}
+export type PropertyType = 'string' | 'response' | 'number' | 'any' | 'json';
 
 // 连接
 export interface Connection {
@@ -84,6 +65,8 @@ export interface Connection {
     targetNodeId: string;
     targetInputId: string;
     path: string;
+    type: PropertyType;
 }
 
-export type NodeTypes = TextNode | LogNode | RouterNode | PortNode | JsonNode;
+export type NodeTypes = BaseNode;
+

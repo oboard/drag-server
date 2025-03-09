@@ -1,16 +1,17 @@
 import React from 'react';
-import { PropertyInfo } from '../../types/index';
+import { PropertyInfo, PropertyType } from '../../types/index';
 import clsx from 'clsx';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { updatePortValue } from '../../store/slices/flowSlice';
+import { getTypeBackgroundColor } from '../../utils/colors';
 
 interface NodePortProps {
     property: PropertyInfo;
     type: 'input' | 'output';
     nodeId: string;
-    onConnectionStart?: (nodeId: string, portId: string, startPos: { x: number; y: number }) => void;
-    onConnectionEnd?: (nodeId: string, portId: string) => void;
+    onConnectionStart?: (nodeId: string, portId: string, type: PropertyType) => void;
+    onConnectionEnd?: (nodeId: string, portId: string, type: PropertyType) => void;
 }
 
 export function NodePropertyComponent({ property, type, nodeId, onConnectionStart, onConnectionEnd }: NodePortProps) {
@@ -31,21 +32,10 @@ export function NodePropertyComponent({ property, type, nodeId, onConnectionStar
     }, [connections, nodeId, property.id, type]);
 
     const handleConnectionEvent = (e: React.PointerEvent<HTMLButtonElement>) => {
-        const button = e.currentTarget;
-        const rect = button.getBoundingClientRect();
-        const canvas = button.closest('.overflow-scroll');
-        if (!canvas) return;
-
-        const canvasRect = canvas.getBoundingClientRect();
-        const pos = {
-            x: rect.left + rect.width / 2 - canvasRect.left + canvas.scrollLeft,
-            y: rect.top + rect.height / 2 - canvasRect.top + canvas.scrollTop
-        };
-
         if (type === 'output') {
-            onConnectionStart?.(nodeId, property.id, pos);
+            onConnectionStart?.(nodeId, property.id, property.type);
         } else {
-            onConnectionEnd?.(nodeId, property.id);
+            onConnectionEnd?.(nodeId, property.id, property.type);
         }
     };
 
@@ -64,7 +54,7 @@ export function NodePropertyComponent({ property, type, nodeId, onConnectionStar
                     <button
                         ref={buttonRef}
                         type='button'
-                        className='bg-primary rounded-full w-4 h-4 hover:bg-secondary transition-colors'
+                        className={clsx('rounded-full w-4 h-4 transition-colors', getTypeBackgroundColor(property.type))}
                         onPointerUp={handleConnectionEvent}
                         onPointerDown={handleConnectionEvent}
                         onPointerEnter={() => setIsHovering(true)}
@@ -103,7 +93,7 @@ export function NodePropertyComponent({ property, type, nodeId, onConnectionStar
                     <button
                         ref={buttonRef}
                         type='button'
-                        className='bg-primary rounded-full w-4 h-4 hover:bg-secondary transition-colors'
+                        className={clsx('rounded-full w-4 h-4 transition-colors', getTypeBackgroundColor(property.type))}
                         onPointerDown={handleConnectionEvent}
                         aria-label={`Connect ${property.type}`}
                         data-node-id={nodeId}
@@ -126,8 +116,8 @@ export function NodeProperties({
     ports: PropertyInfo[];
     type: 'input' | 'output';
     nodeId: string;
-    onConnectionStart?: (nodeId: string, portId: string, startPos: { x: number; y: number }) => void;
-    onConnectionEnd?: (nodeId: string, portId: string) => void;
+    onConnectionStart?: (nodeId: string, portId: string, type: PropertyType) => void;
+    onConnectionEnd?: (nodeId: string, portId: string, type: PropertyType) => void;
 }) {
     return (
         <div className="flex flex-col gap-2">

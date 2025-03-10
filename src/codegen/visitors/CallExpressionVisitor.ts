@@ -50,10 +50,7 @@ export class CallExpressionVisitor implements ExpressionVisitor {
     }
 
     visitText(node: BaseNode, _context: CodeGeneratorContext): babel.types.Expression {
-        return this.t.callExpression(
-            this.t.identifier(`text_${node.id}`),
-            []
-        );
+        return this.t.identifier(`text_${node.id}`);
     }
 
     visitLog(node: BaseNode, _context: CodeGeneratorContext): babel.types.Expression {
@@ -82,6 +79,6 @@ export class CallExpressionVisitor implements ExpressionVisitor {
     }
 
     protected getPropertyValue(node: BaseNode, propertyId: string, defaultValue: string | number, context: CodeGeneratorContext): string | number {
-        return context.properties[node.id]?.[propertyId] || defaultValue;
+        return context.properties[node.id]?.[propertyId] || (() => defaultValue)();
     }
 } 

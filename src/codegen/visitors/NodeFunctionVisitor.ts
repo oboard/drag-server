@@ -102,7 +102,18 @@ export class NodeFunctionVisitor extends BaseNodeVisitor {
                                                     this.t.variableDeclaration("const", [
                                                         this.t.variableDeclarator(
                                                             this.t.identifier("contentType"),
-                                                            this.t.stringLiteral("application/json")
+                                                            this.t.conditionalExpression(
+                                                                this.t.binaryExpression(
+                                                                    "===",
+                                                                    this.t.unaryExpression(
+                                                                        "typeof",
+                                                                        this.t.identifier("value")
+                                                                    ),
+                                                                    this.t.stringLiteral("string")
+                                                                ),
+                                                                this.t.stringLiteral("text/plain"),
+                                                                this.t.stringLiteral("application/json")
+                                                            )
                                                         )
                                                     ]),
                                                     this.t.expressionStatement(
@@ -129,12 +140,23 @@ export class NodeFunctionVisitor extends BaseNodeVisitor {
                                                                 this.t.identifier("end")
                                                             ),
                                                             [
-                                                                this.t.callExpression(
-                                                                    this.t.memberExpression(
-                                                                        this.t.identifier("JSON"),
-                                                                        this.t.identifier("stringify")
+                                                                this.t.conditionalExpression(
+                                                                    this.t.binaryExpression(
+                                                                        "===",
+                                                                        this.t.unaryExpression(
+                                                                            "typeof",
+                                                                            this.t.identifier("value")
+                                                                        ),
+                                                                        this.t.stringLiteral("string")
                                                                     ),
-                                                                    [this.t.identifier("value")]
+                                                                    this.t.identifier("value"),
+                                                                    this.t.callExpression(
+                                                                        this.t.memberExpression(
+                                                                            this.t.identifier("JSON"),
+                                                                            this.t.identifier("stringify")
+                                                                        ),
+                                                                        [this.t.identifier("value")]
+                                                                    )
                                                                 )
                                                             ]
                                                         )

@@ -42,5 +42,12 @@ export default defineConfig(async () => ({
       }
     },
     chunkSizeWarningLimit: 500,
-  }
+  },
+
+  define: {
+    'process.env': {},
+    'process.browser': true,
+    'process.version': '"v16.0.0"',
+    '_path': 'window._path',
+  },
 }));
